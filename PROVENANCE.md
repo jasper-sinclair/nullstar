@@ -21,12 +21,3 @@ The initial embedded 768x256 network was trained by Jasper Sinclair with his
 Cobra training pipeline. Its original binary has SHA-256:
 
 `222894CA3D30091AA391365B06E4A1D07E69274CDD8CD3A308AD6CA02926CDEE`
-
-The Tulip network from the Iris project was used historically while developing
-Cobra but is not included in Nullstar. Daniel Shawul's `nnue-probe`, used and
-credited by Kobra, is also not included.
-
-No source code from the Rust Coda engine or from other third-party chess engines
-was imported into Nullstar. External publications and engine implementations
-may be studied for ideas; any resulting implementation must be written for
-Nullstar and its source recorded when material to the design.
