@@ -1,0 +1,62 @@
+{
+  "batch_size": 256,
+  "epochs": 20,
+  "learning_rate": 0.001,
+  "lr_decay_factor": 0.5,
+  "lr_patience": 3,
+
+  "num_workers": 0,
+  "device": "auto",
+
+  "scale": 128,
+  "l1_size": 256,
+
+  "raw_training_txt": "training.txt",
+  "training_txt": "training_shuffled.txt",
+  "training_file": "training_sparse.bin",
+  "label_perspective": "side_to_move",
+
+  "dataset_sample_limit": 0,
+  "max_hash": 20000000,
+
+  "validation_split": 0.05,
+
+  "draw_drop_rate": 0.30,
+
+  "seed": 42,
+
+  "shuffle_input": "training.txt",
+  "shuffle_output": "training_shuffled.txt",
+
+  "checkpoint_path": "checkpoint.pt",
+  "best_model_path": "best_model.pt",
+  "export_path": "network.bin",
+  "save_epoch_networks": true,
+
+  "skip_invalid": true,
+  "use_amp": true,
+
+  "quiet_min_ply": 10,
+  "quiet_max_score": 3000,
+  "quiet_min_pieces": 6,
+
+  "label_smoothing": 0.0,
+  "grad_clip": 1.0,
+  "feature_dropout": 0.0,
+
+  "verification_epd": "training_shuffled.txt",
+  "verification_samples": 10,
+  "verify_progress_interval": 1000000,
+  "verify_sample_limit": 0,
+  "verify_exact_label_distribution": false,
+
+  "sf_score_scaling": 400.0,
+  "sf_max_cp": 2000,
+  "sf_min_ply": 0,
+  "sf_max_score": 100000,
+
+  "perspective_warning_threshold": 0.2,
+
+  "log_every": 5000,
+  "mid_checkpoint_every": 5000
+}

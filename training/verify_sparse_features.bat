@@ -1,0 +1,2 @@
+python verify_sparse_features.py
+pause

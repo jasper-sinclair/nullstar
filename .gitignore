@@ -1,0 +1,53 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+*.idb
+*.iobj
+*.ipdb
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+Win32/
+build/
+
+# C/C++ build products
+*.d
+*.exp
+*.ilk
+*.lib
+*.o
+*.obj
+*.pdb
+*.pgc
+*.pgd
+*.profdata
+*.profraw
+
+# Engine executables and generated match data
+*.exe
+training.txt
+training_sparse.bin
+*.epd
+*.pgn
+
+# Python
+__pycache__/
+*.py[cod]
+*.pt
+*.pth
+*.tmp
+*.log
+network*.bin
+*_env/
+.venv/
+venv/
+
+# Local tooling
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini

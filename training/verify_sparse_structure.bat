@@ -1,0 +1,1 @@
+python verify_sparse_structure.py

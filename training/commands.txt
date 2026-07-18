@@ -1,0 +1,14 @@
+Create and activate a local environment from this directory:
+
+    python -m venv .venv
+    .venv\Scripts\activate
+    python -m pip install -r requirements.txt
+
+Run the configured training pipeline:
+
+    python run_pipeline.py
+
+Example commands sent to a Nullstar engine for generating self-play data:
+
+    selfplay 20 movetime 50
+    selfplay 5000000 nodes 8000 threads 8

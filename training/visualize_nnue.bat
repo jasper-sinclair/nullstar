@@ -1,0 +1,2 @@
+python visualize_nnue.py
+pause

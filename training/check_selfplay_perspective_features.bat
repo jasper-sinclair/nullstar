@@ -1,0 +1,1 @@
+python check_selfplay_perspective_features.py

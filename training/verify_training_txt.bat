@@ -1,0 +1,2 @@
+python verify_training_txt.py
+pause

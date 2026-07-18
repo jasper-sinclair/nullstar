@@ -1,0 +1,2 @@
+python convert_selfplay_blocks.py
+pause

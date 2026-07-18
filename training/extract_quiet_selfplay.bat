@@ -1,0 +1,2 @@
+python extract_quiet_selfplay.py
+pause

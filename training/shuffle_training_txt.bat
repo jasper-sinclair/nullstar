@@ -1,0 +1,2 @@
+python shuffle_training_txt.py
+pause
