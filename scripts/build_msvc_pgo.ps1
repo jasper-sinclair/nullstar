@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$root = $PSScriptRoot
+$root = Split-Path -Parent $PSScriptRoot
 $project = Join-Path $root 'src\nullstar.vcxproj'
 $binaryDir = Join-Path $root 'binaries'
 $engine = Join-Path $binaryDir 'nullstar_msvc_pgo.exe'

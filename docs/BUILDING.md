@@ -15,10 +15,11 @@ msbuild src\nullstar.sln /t:Rebuild /m /p:Configuration=Release /p:Platform=x64
 
 Output: `binaries/nullstar_msvc_nonpgo.exe`.
 
-For the profile-guided release, double-click `build_msvc_pgo.bat`, or run:
+For the profile-guided release, double-click
+`scripts\build_msvc_pgo.bat`, or run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\build_msvc_pgo.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\build_msvc_pgo.ps1
 ```
 
 The script instruments Nullstar, trains it with the deterministic 32-position

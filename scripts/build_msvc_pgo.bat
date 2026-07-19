@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass ^
   -File "%~dp0build_msvc_pgo.ps1"
