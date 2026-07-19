@@ -1,5 +1,7 @@
 # Nullstar
 
+<img src="docs/nullstar.png" alt="Nullstar emblem" width="120">
+
 [![Release][release-badge]][release-link]
 [![Commits][commits-badge]][commits-link]
 [![Downloads][downloads-badge]][downloads-link]
