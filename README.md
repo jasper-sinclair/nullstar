@@ -9,10 +9,10 @@
 
 Nullstar is an experimental UCI chess engine by Jasper Sinclair.
 
-The project began in 2026 as a new development line following Jasper's Kobra,
-BBCE, and Cobra engines. Nullstar retains that original
-chess-engine foundation while developing an independent evaluation, search,
-and implementation. OpenAI Codex is used as an engineering and review tool.
+The project began in 2026 as a new development line following my Kobra,
+BBCE, and Cobra engines. Nullstar retains that original chess-engine
+foundation while developing an independent evaluation, search, and
+implementation. OpenAI Codex is used as an engineering and review tool.
 
 The current public release, Nullstar 003, uses a self-contained 768x256 NNUE
 evaluator and Jasper Sinclair's Set 006 network. The network is compiled into
