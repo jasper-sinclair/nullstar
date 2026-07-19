@@ -30,7 +30,10 @@ build/
 # Engine executables and generated match data
 *.exe
 training.txt
+training_*.txt
 training_sparse.bin
+training/*.bin
+training/*.png
 *.epd
 *.pgn
 

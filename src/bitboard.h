@@ -5,10 +5,12 @@
 #include <vector>
 #include "main.h"
 #include "nnue.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4324) //'board_state': structure was padded due to alignment specifier
 #else
 #endif
+
 struct bitboard{
   u64 data;
   bitboard() = default;
@@ -140,6 +142,7 @@ constexpr bitboard filee = filea << 4;
 constexpr bitboard filef = filea << 5;
 constexpr bitboard fileg = filea << 6;
 constexpr bitboard fileh = filea << 7;
+
 constexpr bitboard rank1(0xff);
 constexpr bitboard rank2 = rank1 << 8;
 constexpr bitboard rank3 = rank1 << 16;
@@ -148,6 +151,7 @@ constexpr bitboard rank5 = rank1 << 32;
 constexpr bitboard rank6 = rank1 << 40;
 constexpr bitboard rank7 = rank1 << 48;
 constexpr bitboard rank8 = rank1 << 56;
+
 constexpr bitboard white_qs_path(0xe);
 constexpr bitboard white_ks_path(0x60);
 constexpr bitboard black_qs_path(0xE00000000000000);

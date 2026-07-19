@@ -1,4 +1,5 @@
 #pragma once
+
 namespace uci{
   void run_selfplay(
     int games,

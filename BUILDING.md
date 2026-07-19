@@ -53,3 +53,10 @@ Outputs: `nullstar_mingw_native_pgo.exe` and
 x86-64-v3 baseline (AVX2, BMI2, and related instructions). The legacy `v3`
 and `pgo-v3` target names remain aliases. PGO targets retrain from scratch so
 stale profiles cannot leak into a release.
+
+## Embedded NNUE
+
+`src/net.cpp` contains the default quantized network and is compiled by both
+build systems. A separate `network.bin` is not needed to build or run Nullstar.
+To replace the network, follow `training/README.md` and use the source utility
+in `tools/embed_file/`; then rebuild every release target.

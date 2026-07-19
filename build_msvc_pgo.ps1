@@ -47,7 +47,7 @@ try {
     $env:PATH = $savedPath
   }
 
-  $expectedNodes = if ($Depth -eq 13) { 3462653 } else { $null }
+  $expectedNodes = if ($Depth -eq 13) { 2985205 } else { $null }
   $result = $trainingOutput |
     Where-Object { $_ -match '^Nodes (\d+)$' } |
     Select-Object -Last 1
@@ -73,7 +73,7 @@ try {
   }
 
   $smoke = @('bench 10', 'quit') | & $engine 2>&1
-  if ($LASTEXITCODE -ne 0 -or -not ($smoke -match '^Nodes 1014160$')) {
+  if ($LASTEXITCODE -ne 0 -or -not ($smoke -match '^Nodes 890981$')) {
     throw 'Optimized MSVC executable failed its benchmark smoke test.'
   }
 

@@ -2,16 +2,29 @@
 
 Nullstar is an experimental UCI chess engine by Jasper Sinclair.
 
-The project began in 2026 as a new development line in Jasper's Bitboard Chess,
-BBCE, Kobra, and Cobra engine family. Nullstar retains that original
+The project began in 2026 as a new development line following Jasper's Kobra,
+BBCE, and Cobra engines. Nullstar retains that original
 chess-engine foundation while developing an independent evaluation, search,
 and implementation. OpenAI Codex is used as an engineering and review tool.
 
-The current `000` version is a developmental source baseline, not a strength
-release. It uses a self-contained 768x256 NNUE evaluator and an embedded network
-trained by Jasper Sinclair. The embedded network predates a correction to the
-training perspective and is retained as a transitional, fully owned baseline
-rather than a release net.
+The current `003` development version uses a self-contained 768x256 NNUE
+evaluator and Jasper Sinclair's Set 006 network. The network is compiled into
+the engine, so release executables need no companion files. Version 000 remains
+the original strength baseline for controlled testing.
+
+## Repository layout
+
+- `src/`: engine source, Visual Studio project, MinGW Makefile, and embedded
+  network source;
+- `training/`: self-play data conversion, validation, training, export, and
+  visualization tools;
+- `tools/embed_file/`: portable C++ utility that converts `network.bin` into
+  the tracked `src/net.cpp` array.
+
+See [`NETWORK.md`](NETWORK.md) for the active network's hashes and provenance,
+and [`training/README.md`](training/README.md) for the complete self-play to
+engine workflow. See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for the current
+release result, binary checksums, and compatibility requirements.
 
 ## Building
 
