@@ -1,8 +1,0 @@
-training.txt
-    -> check_selfplay_perspective_features.py
-    -> shuffle_training_txt.py
-    -> convert_to_sparse.py
-    -> verify_sparse_structure.py
-    -> train.py
-
-Run verify_sparse_features.py separately for a text/binary feature-order audit.

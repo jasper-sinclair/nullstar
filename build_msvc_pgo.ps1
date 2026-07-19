@@ -8,8 +8,11 @@ Set-StrictMode -Version Latest
 
 $root = $PSScriptRoot
 $project = Join-Path $root 'src\nullstar.vcxproj'
-$engine = Join-Path $root 'nullstar_msvc_pgo.exe'
+$binaryDir = Join-Path $root 'binaries'
+$engine = Join-Path $binaryDir 'nullstar_msvc_pgo.exe'
 $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+
+New-Item -ItemType Directory -Force -Path $binaryDir | Out-Null
 
 if (-not (Test-Path -LiteralPath $vswhere)) {
   throw 'Visual Studio Installer (vswhere.exe) was not found.'

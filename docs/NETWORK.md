@@ -23,11 +23,11 @@ representation with the repository's cleaned, reproducible embedding tool.
 
 The generated C++ array was independently decoded and verified byte-for-byte
 against the quantized network. The archived configuration is preserved as
-`training/configs/nullstar-002-set006.json`.
+[`training/configs/nullstar-002-set006.json`](../training/configs/nullstar-002-set006.json).
 
 ## Rebuilding or replacing the network
 
-The full source workflow is documented in `training/README.md`:
+The full source workflow is documented in [`TRAINING.md`](TRAINING.md):
 
 1. generate `training.txt` with Nullstar self-play;
 2. validate, shuffle, and convert it to the sparse format;

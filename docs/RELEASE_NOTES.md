@@ -53,14 +53,18 @@ There is no intentional search-algorithm change between the tested Nullstar
 
 ## Windows binaries
 
+Build scripts write these generated executables to the ignored local
+`binaries/` directory. Publish release executables as GitHub Release assets;
+do not commit them to the source tree.
+
 | Binary | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `nullstar_msvc_nonpgo.exe` | 858,624 | `3D53A429F610F865BD2897D4E21AAFF731568F5A7A3A175E5F268B5D22C30C4B` |
-| `nullstar_msvc_pgo.exe` | 834,560 | `B09DC09691E5E01ED09BDF375307AE8DE7DC3A78454AE197EE01B36A68112814` |
-| `nullstar_mingw_native_nonpgo.exe` | 1,686,528 | `1B7F0ECB9AD8A703E702CE02AEF902A296C5F3256A7228037162D2982F9C4955` |
-| `nullstar_mingw_native_pgo.exe` | 1,679,872 | `8237C98DCE6CD60CF28DA8784FE1FA25B81B7B3FB898AE38D191ED1B6D8C354B` |
-| `nullstar_mingw_avx2_nonpgo.exe` | 1,687,552 | `6F6D690B994B430282E99A5C933F373C045F46C0250EB781A5112CF9FDC03B4C` |
-| `nullstar_mingw_avx2_pgo.exe` | 1,680,384 | `21B2C3794EA4397E282022485F32BC56DEB34C3B08FC3E865110AA90314984A0` |
+| `nullstar_msvc_nonpgo.exe` | 858,624 | `A8EDEC9A3615CCDABA69343BE1B04D5B502EF763AEAFCA93DD6234B3EF6B3E51` |
+| `nullstar_msvc_pgo.exe` | 834,560 | `9CE82AE8B8F6141B6C01E3328A18C9C287D671BE9C6E6FB4D3F8FB0F281F141E` |
+| `nullstar_mingw_native_nonpgo.exe` | 1,686,528 | `58B3BDBDD4CAE90561FD71CF9C0772314DA21B28E00E339281BC8CC3DB79A07E` |
+| `nullstar_mingw_native_pgo.exe` | 1,679,872 | `B2F3F621B23381609E855002F092CC59725F3A915B9FD6E37C4395FFCAF83858` |
+| `nullstar_mingw_avx2_nonpgo.exe` | 1,687,552 | `E949931570ABA0BC6F12F6F8F226421062A00F762E5530EC9DC4486281A541F7` |
+| `nullstar_mingw_avx2_pgo.exe` | 1,680,384 | `BF69AEC2860B1BA0330A5185A17E5DA4053ADB56133A86AF1644528772F0E7E1` |
 
 The MinGW `native` binaries are tuned for the build computer and should be
 used only on that computer or a demonstrably compatible processor. The MinGW

@@ -34,5 +34,6 @@ representation. Its quantized binary has SHA-256:
 
 `30A74951A897E696A5156BC9E192771DB99FE5754A6431D7EA2D562003224CE6`
 
-See `NETWORK.md` for artifact hashes, archived configuration details, and the
-reproduction boundary for the original multi-gigabyte training dataset.
+See [`NETWORK.md`](NETWORK.md) for artifact hashes, archived configuration
+details, and the reproduction boundary for the original multi-gigabyte
+training dataset.

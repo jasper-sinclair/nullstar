@@ -5,7 +5,8 @@ CXX   ?= g++
 STRIP ?= strip
 
 PROFILE ?= native
-BIN     ?= ../nullstar_mingw_native_nonpgo.exe
+BIN     ?= ../binaries/nullstar_mingw_native_nonpgo.exe
+BIN_DIR := $(patsubst %/,%,$(dir $(BIN)))
 
 SUPPORTED_PROFILES := native v3
 ifeq ($(filter $(PROFILE),$(SUPPORTED_PROFILES)),)
@@ -64,11 +65,11 @@ release: $(BIN)
 
 native:
 	$(MAKE) --no-print-directory PROFILE=native \
-		BIN=../nullstar_mingw_native_nonpgo.exe release
+		BIN=../binaries/nullstar_mingw_native_nonpgo.exe release
 
 avx2:
 	$(MAKE) --no-print-directory PROFILE=v3 \
-		BIN=../nullstar_mingw_avx2_nonpgo.exe release
+		BIN=../binaries/nullstar_mingw_avx2_nonpgo.exe release
 
 # Backward-compatible compiler-profile alias.
 v3: avx2
@@ -92,7 +93,8 @@ else
 		../build/nullstar_mingw_native_pgo_train.exe >/dev/null
 endif
 	$(MAKE) --no-print-directory -B PROFILE=native PGO=use \
-		BUILD_ROOT=$(PGO_BUILD_ROOT) BIN=../nullstar_mingw_native_pgo.exe release
+		BUILD_ROOT=$(PGO_BUILD_ROOT) \
+		BIN=../binaries/nullstar_mingw_native_pgo.exe release
 
 pgo-avx2:
 	@$(call remove_dir,$(PGO_DATA_ROOT)/v3)
@@ -108,13 +110,21 @@ else
 		../build/nullstar_mingw_avx2_pgo_train.exe >/dev/null
 endif
 	$(MAKE) --no-print-directory -B PROFILE=v3 PGO=use \
-		BUILD_ROOT=$(PGO_BUILD_ROOT) BIN=../nullstar_mingw_avx2_pgo.exe release
+		BUILD_ROOT=$(PGO_BUILD_ROOT) \
+		BIN=../binaries/nullstar_mingw_avx2_pgo.exe release
 
 # Backward-compatible compiler-profile alias.
 pgo-v3: pgo-avx2
 
-$(BIN): $(OBJ)
+$(BIN): $(OBJ) | $(BIN_DIR)
 	$(CXX) $(OBJ) $(LDFLAGS) $(LDLIBS) -o $@
+
+$(BIN_DIR):
+ifeq ($(OS),Windows_NT)
+	@if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
+else
+	@mkdir -p "$@"
+endif
 
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -144,9 +154,9 @@ distclean:
 	@$(call remove_dir,$(PGO_DATA_ROOT))
 	@$(call remove_file,../build/nullstar_mingw_native_pgo_train.exe)
 	@$(call remove_file,../build/nullstar_mingw_avx2_pgo_train.exe)
-	@$(call remove_file,../nullstar_mingw_native_nonpgo.exe)
-	@$(call remove_file,../nullstar_mingw_native_pgo.exe)
-	@$(call remove_file,../nullstar_mingw_avx2_nonpgo.exe)
-	@$(call remove_file,../nullstar_mingw_avx2_pgo.exe)
+	@$(call remove_file,../binaries/nullstar_mingw_native_nonpgo.exe)
+	@$(call remove_file,../binaries/nullstar_mingw_native_pgo.exe)
+	@$(call remove_file,../binaries/nullstar_mingw_avx2_nonpgo.exe)
+	@$(call remove_file,../binaries/nullstar_mingw_avx2_pgo.exe)
 
 -include $(DEP)

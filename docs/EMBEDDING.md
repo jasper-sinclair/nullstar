@@ -1,8 +1,8 @@
 # NNUE embedding tool
 
-`embed_file` converts a quantized `network.bin` into the `src/net.cpp` byte
-array linked into Nullstar. The finished chess-engine executable does not load
-an external network file.
+The `tools/embed_file/` utility converts a quantized `network.bin` into the
+`src/net.cpp` byte array linked into Nullstar. The finished chess-engine
+executable does not load an external network file.
 
 Build with CMake from the repository root:
 

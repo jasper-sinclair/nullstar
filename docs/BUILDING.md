@@ -1,8 +1,8 @@
 # Building Nullstar
 
 Nullstar's release builds use C++23 with MinGW and the latest available C++
-language mode with MSVC. Final executables are written to the repository root;
-objects and profile data remain isolated under `build/`.
+language mode with MSVC. Final executables are written to `binaries/`; objects
+and MinGW profile data remain isolated under `build/`.
 
 ## Visual Studio / MSVC
 
@@ -13,7 +13,7 @@ Build the normal x64 release from Visual Studio by opening
 msbuild src\nullstar.sln /t:Rebuild /m /p:Configuration=Release /p:Platform=x64
 ```
 
-Output: `nullstar_msvc_nonpgo.exe`.
+Output: `binaries/nullstar_msvc_nonpgo.exe`.
 
 For the profile-guided release, double-click `build_msvc_pgo.bat`, or run:
 
@@ -23,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File .\build_msvc_pgo.ps1
 
 The script instruments Nullstar, trains it with the deterministic 32-position
 benchmark, links the optimized executable, and verifies the benchmark
-signature. Output: `nullstar_msvc_pgo.exe`.
+signature. Output: `binaries/nullstar_msvc_pgo.exe`.
 
 ## MinGW-w64
 
@@ -36,8 +36,8 @@ mingw32-make native
 mingw32-make avx2
 ```
 
-Outputs: `nullstar_mingw_native_nonpgo.exe` and
-`nullstar_mingw_avx2_nonpgo.exe`.
+Outputs: `binaries/nullstar_mingw_native_nonpgo.exe` and
+`binaries/nullstar_mingw_avx2_nonpgo.exe`.
 
 PGO + LTO builds:
 
@@ -46,8 +46,8 @@ mingw32-make pgo-native
 mingw32-make pgo-avx2
 ```
 
-Outputs: `nullstar_mingw_native_pgo.exe` and
-`nullstar_mingw_avx2_pgo.exe`.
+Outputs: `binaries/nullstar_mingw_native_pgo.exe` and
+`binaries/nullstar_mingw_avx2_pgo.exe`.
 
 `native` is tuned for the build machine. `avx2` targets the portable
 x86-64-v3 baseline (AVX2, BMI2, and related instructions). The legacy `v3`
@@ -58,5 +58,6 @@ stale profiles cannot leak into a release.
 
 `src/net.cpp` contains the default quantized network and is compiled by both
 build systems. A separate `network.bin` is not needed to build or run Nullstar.
-To replace the network, follow `training/README.md` and use the source utility
-in `tools/embed_file/`; then rebuild every release target.
+To replace the network, follow [`TRAINING.md`](TRAINING.md) and use the source
+utility documented in [`EMBEDDING.md`](EMBEDDING.md); then rebuild every
+release target.

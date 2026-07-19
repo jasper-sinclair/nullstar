@@ -1,9 +1,9 @@
 # Nullstar NNUE training
 
-This directory contains the complete source pipeline used to prepare data,
-train, validate, visualize, and export Nullstar's compact NNUE networks. Large
-datasets, Python environments, checkpoints, and generated networks are build
-artifacts and are intentionally not stored in Git.
+The `training/` directory contains the complete source pipeline used to prepare
+data, train, validate, visualize, and export Nullstar's compact NNUE networks.
+Large datasets, Python environments, checkpoints, and generated networks are
+build artifacts and are intentionally not stored in Git.
 
 ## Network and data layout
 
@@ -30,9 +30,11 @@ float32 result
 
 ## 1. Create the Python environment
 
-Run from this directory:
+From the repository root, enter the training directory and create the
+environment:
 
 ```powershell
+Set-Location .\training
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -50,7 +52,7 @@ working directory so it creates `training.txt` here:
 
 ```powershell
 Set-Location .\training
-..\nullstar_mingw_avx2_pgo.exe
+..\binaries\nullstar_mingw_avx2_pgo.exe
 ```
 
 At the engine prompt, for example:
@@ -91,7 +93,7 @@ checkpoints before intentionally starting a fresh experiment.
 ## 4. Embed the network
 
 From the repository root, build the utility documented in
-`tools/embed_file/README.md`, then run:
+[`EMBEDDING.md`](EMBEDDING.md), then run:
 
 ```powershell
 .\build\tools\embed_file.exe .\training\network.bin .\src\net.cpp

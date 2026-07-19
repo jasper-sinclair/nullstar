@@ -16,15 +16,13 @@ the original strength baseline for controlled testing.
 
 - `src/`: engine source, Visual Studio project, MinGW Makefile, and embedded
   network source;
-- `training/`: self-play data conversion, validation, training, export, and
-  visualization tools;
-- `tools/embed_file/`: portable C++ utility that converts `network.bin` into
-  the tracked `src/net.cpp` array.
+- `training/`: NNUE data-processing and training programs;
+- `tools/`: development utilities;
+- `docs/`: building, training, network, provenance, and release documentation;
+- `binaries/`: ignored local output directory for release executables.
 
-See [`NETWORK.md`](NETWORK.md) for the active network's hashes and provenance,
-and [`training/README.md`](training/README.md) for the complete self-play to
-engine workflow. See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for the current
-release result, binary checksums, and compatibility requirements.
+Start with the [`documentation index`](docs/README.md), or see the current
+[`release notes`](docs/RELEASE_NOTES.md) directly.
 
 ## Building
 
@@ -32,12 +30,13 @@ The supported release matrix provides normal and profile-guided MSVC builds,
 plus native and portable AVX2 MinGW builds. Every filename explicitly states
 its compiler, CPU target where applicable, and PGO status.
 
-See [`BUILDING.md`](BUILDING.md) for commands and output names. Official builds
-use C++23 with MinGW and the latest language mode available in MSVC.
+See [`docs/BUILDING.md`](docs/BUILDING.md) for commands and output names.
+Official builds use C++23 with MinGW and the latest language mode available in
+MSVC.
 
 ## License
 
 Copyright (c) 2026 Jasper Sinclair.
 
 Nullstar is distributed under the GNU General Public License version 3 only
-(`GPL-3.0-only`). See `LICENSE` and `PROVENANCE.md`.
+(`GPL-3.0-only`). See `LICENSE` and [`docs/PROVENANCE.md`](docs/PROVENANCE.md).

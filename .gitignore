@@ -13,6 +13,8 @@ x64/
 x86/
 Win32/
 build/
+binaries/*
+!binaries/.gitkeep
 
 # C/C++ build products
 *.d
