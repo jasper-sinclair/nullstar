@@ -71,5 +71,6 @@
   "perspective_warning_threshold": 0.2,
 
   "log_every": 5000,
-  "mid_checkpoint_every": 5000
+  "mid_checkpoint_every": 50000,
+  "resume_mid_epoch_batch": 355001
 }

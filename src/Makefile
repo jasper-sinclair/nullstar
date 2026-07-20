@@ -23,13 +23,8 @@ NATIVE_FLAGS  := -march=native -mtune=native
 V3_FLAGS      := -march=x86-64-v3 -mtune=generic
 PROFILE_FLAGS := $(if $(filter native,$(PROFILE)),$(NATIVE_FLAGS),$(V3_FLAGS))
 
-ifeq ($(OS),Windows_NT)
-  remove_dir = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
-  remove_file = if exist "$(subst /,\,$1)" del /q "$(subst /,\,$1)"
-else
-  remove_dir = rm -rf "$1"
-  remove_file = rm -f "$1"
-endif
+remove_dir  = rm -rf -- "$(1)"
+remove_file = rm -f -- "$(1)"
 
 CXXFLAGS += $(WARN_FLAGS) $(COMMON_FLAGS) $(PROFILE_FLAGS) -MMD -MP
 LDFLAGS  += -static -flto=auto -fipa-pta -fno-semantic-interposition
@@ -55,10 +50,14 @@ SRC := $(wildcard *.cpp)
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
-.PHONY: all build release native avx2 v3 pgo pgo-native pgo-avx2 pgo-v3 \
-        info clean distclean
+.PHONY: all build release nonpgo binaries native avx2 v3 pgo pgo-native \
+        pgo-avx2 pgo-v3 info clean distclean
 
 all build: $(BIN)
+
+nonpgo: native avx2
+
+binaries: nonpgo pgo
 
 release: $(BIN)
 	$(STRIP) $(BIN)
@@ -85,13 +84,10 @@ pgo-native:
 	$(MAKE) --no-print-directory -B PROFILE=native PGO=generate \
 		BUILD_ROOT=$(PGO_BUILD_ROOT) \
 		BIN=../build/nullstar_mingw_native_pgo_train.exe build
-ifeq ($(OS),Windows_NT)
-	@(echo bench $(PGO_DEPTH)& echo quit) | \
-		..\build\nullstar_mingw_native_pgo_train.exe >NUL
-else
 	printf 'bench $(PGO_DEPTH)\nquit\n' | \
 		../build/nullstar_mingw_native_pgo_train.exe >/dev/null
-endif
+	@test -n "$$(find "$(PGO_DATA_ROOT)/native" -type f -name '*.gcda' -print -quit)" || \
+		{ echo "Error: native PGO training produced no profile data." >&2; exit 1; }
 	$(MAKE) --no-print-directory -B PROFILE=native PGO=use \
 		BUILD_ROOT=$(PGO_BUILD_ROOT) \
 		BIN=../binaries/nullstar_mingw_native_pgo.exe release
@@ -102,13 +98,10 @@ pgo-avx2:
 	$(MAKE) --no-print-directory -B PROFILE=v3 PGO=generate \
 		BUILD_ROOT=$(PGO_BUILD_ROOT) \
 		BIN=../build/nullstar_mingw_avx2_pgo_train.exe build
-ifeq ($(OS),Windows_NT)
-	@(echo bench $(PGO_DEPTH)& echo quit) | \
-		..\build\nullstar_mingw_avx2_pgo_train.exe >NUL
-else
 	printf 'bench $(PGO_DEPTH)\nquit\n' | \
 		../build/nullstar_mingw_avx2_pgo_train.exe >/dev/null
-endif
+	@test -n "$$(find "$(PGO_DATA_ROOT)/v3" -type f -name '*.gcda' -print -quit)" || \
+		{ echo "Error: AVX2 PGO training produced no profile data." >&2; exit 1; }
 	$(MAKE) --no-print-directory -B PROFILE=v3 PGO=use \
 		BUILD_ROOT=$(PGO_BUILD_ROOT) \
 		BIN=../binaries/nullstar_mingw_avx2_pgo.exe release
@@ -120,21 +113,13 @@ $(BIN): $(OBJ) | $(BIN_DIR)
 	$(CXX) $(OBJ) $(LDFLAGS) $(LDLIBS) -o $@
 
 $(BIN_DIR):
-ifeq ($(OS),Windows_NT)
-	@if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
-else
 	@mkdir -p "$@"
-endif
 
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
-ifeq ($(OS),Windows_NT)
-	@if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
-else
 	@mkdir -p "$@"
-endif
 
 info:
 	@echo PROFILE=$(PROFILE)

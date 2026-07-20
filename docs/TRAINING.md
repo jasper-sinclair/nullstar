@@ -157,6 +157,10 @@ disk-backed `uint64` record-offset index. Its block sampler changes training
 order each epoch without allocating a full-record permutation. Use
 `train_existing_full_cpu.bat` after a training-only failure when the atomic
 full sparse file has already passed pipeline verification.
+Mid-epoch checkpoints record the next batch and resume the same deterministic
+block order without replaying completed positions. The
+`resume_mid_epoch_batch` configuration value is only a recovery override for
+older checkpoints that predate embedded batch progress.
 
 `clean_here.bat` provides separately confirmed cleanup modes for legacy Set
 006 artifacts, the current full STM training state, the isolated smoke test,

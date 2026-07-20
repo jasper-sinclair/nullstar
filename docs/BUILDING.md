@@ -28,13 +28,22 @@ signature. Output: `binaries/nullstar_msvc_pgo.exe`.
 
 ## MinGW-w64
 
-Run these commands from the `src` directory.
+Open an MSYS2 MinGW64 shell and run these commands from the `src` directory.
+To build all four MinGW release binaries with one command:
+
+```sh
+./make_it.sh
+```
+
+The launcher also accepts `nonpgo`, `pgo`, `native`, `avx2`, `pgo-native`,
+`pgo-avx2`, and `clean`. Set `JOBS` to override its default of using all
+available logical processors.
 
 Normal LTO builds:
 
 ```sh
-mingw32-make native
-mingw32-make avx2
+make native
+make avx2
 ```
 
 Outputs: `binaries/nullstar_mingw_native_nonpgo.exe` and
@@ -43,8 +52,8 @@ Outputs: `binaries/nullstar_mingw_native_nonpgo.exe` and
 PGO + LTO builds:
 
 ```sh
-mingw32-make pgo-native
-mingw32-make pgo-avx2
+make pgo-native
+make pgo-avx2
 ```
 
 Outputs: `binaries/nullstar_mingw_native_pgo.exe` and

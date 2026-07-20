@@ -16,11 +16,20 @@ if not exist "training_sparse_stm.bin" goto :data_error
 if errorlevel 1 goto :environment_error
 
 if exist "checkpoint_stm_base.pt" (
+  goto :resume_prompt
+)
+if exist "checkpoint_mid_epoch_stm_base.pt" (
+  goto :resume_prompt
+)
+goto :start_training
+
+:resume_prompt
   echo.
   echo A full-training checkpoint already exists.
   choice /C YN /N /M "Resume that checkpoint? [Y/N] "
   if errorlevel 2 exit /b 0
-)
+
+:start_training
 
 "%NULLSTAR_PYTHON%" run_pipeline.py --start-at train.py
 set "result=%errorlevel%"

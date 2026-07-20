@@ -423,7 +423,48 @@ class DatasetRange(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return self.dataset[self.start + index]
+        return self.start + index
+
+
+class SparseBatchCollator:
+    """Decode one dense batch directly, avoiding per-position tensor churn."""
+
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __call__(self, record_indices):
+        self.dataset._open_resources()
+        batch_size = len(record_indices)
+        x_stm = np.zeros((batch_size, INPUT_SIZE), dtype=np.float32)
+        x_nstm = np.zeros((batch_size, INPUT_SIZE), dtype=np.float32)
+        results = np.empty(batch_size, dtype=np.float32)
+
+        for row, record_index in enumerate(record_indices):
+            offset = int(self.dataset.offsets[int(record_index)])
+            ptr = offset
+            n_stm = self.dataset.mm[ptr]
+            ptr += 1
+            n_nstm = self.dataset.mm[ptr]
+            ptr += 1
+
+            stm_indices = np.frombuffer(
+                self.dataset.mm, dtype="<u2", count=n_stm, offset=ptr
+            )
+            ptr += 2 * n_stm
+            nstm_indices = np.frombuffer(
+                self.dataset.mm, dtype="<u2", count=n_nstm, offset=ptr
+            )
+            ptr += 2 * n_nstm
+
+            x_stm[row, stm_indices] = 1.0
+            x_nstm[row, nstm_indices] = 1.0
+            results[row] = struct.unpack_from("<f", self.dataset.mm, ptr)[0]
+
+        return (
+            torch.from_numpy(x_stm),
+            torch.from_numpy(x_nstm),
+            torch.from_numpy(results),
+        )
 
 
 class BlockShuffleSampler(Sampler):
@@ -434,28 +475,40 @@ class BlockShuffleSampler(Sampler):
         self.block_size = int(block_size)
         self.seed = int(seed)
         self.epoch = 0
+        self.start_position = 0
         if self.block_size <= 0:
             raise ValueError("sampler_block_size must be positive")
 
     def __len__(self):
-        return self.length
+        return self.length - self.start_position
 
-    def set_epoch(self, epoch):
+    def set_epoch(self, epoch, start_position=0):
         self.epoch = int(epoch)
+        self.start_position = int(start_position)
+        if not 0 <= self.start_position <= self.length:
+            raise ValueError("sampler start position is outside the dataset")
 
     def __iter__(self):
         block_count = (self.length + self.block_size - 1) // self.block_size
         blocks = list(range(block_count))
         generator = random.Random(self.seed + self.epoch)
         generator.shuffle(blocks)
+        skip = self.start_position
 
         for block in blocks:
             start = block * self.block_size
             stop = min(start + self.block_size, self.length)
-            if generator.getrandbits(1):
-                yield from range(stop - 1, start - 1, -1)
+            reverse = bool(generator.getrandbits(1))
+            block_length = stop - start
+            if skip >= block_length:
+                skip -= block_length
+                continue
+
+            if reverse:
+                yield from range(stop - 1 - skip, start - 1, -1)
             else:
-                yield from range(start, stop)
+                yield from range(start + skip, stop)
+            skip = 0
 
 
 # =========================
@@ -591,19 +644,25 @@ def main():
     )
     logger.info("Training positions: %d", train_size)
     logger.info("Validation positions: %d", val_size)
+    batch_size = int(config.get("batch_size", 256))
+    collator = SparseBatchCollator(dataset)
 
     train_loader = DataLoader(
         train_set,
-        batch_size=config.get("batch_size", 256),
+        batch_size=batch_size,
         sampler=train_sampler,
         num_workers=config.get("num_workers", 0),
-        pin_memory=use_gpu
+        pin_memory=use_gpu,
+        collate_fn=collator,
     )
 
     val_loader = DataLoader(
         val_set,
-        batch_size=config.get("batch_size", 256),
-        shuffle=False
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=config.get("num_workers", 0),
+        pin_memory=use_gpu,
+        collate_fn=collator,
     )
 
     model = NNUE(config.get("l1_size", 128)).to(device)
@@ -625,6 +684,7 @@ def main():
         scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 
     start_epoch = 0
+    resume_batch = 0
     best_val_loss = float("inf")
 
     # Resume
@@ -634,15 +694,31 @@ def main():
     )
     export_path = config.get("export_path", "network.bin")
 
+    resume_path = None
     if os.path.exists(checkpoint_path):
-        logger.info("Resuming from checkpoint...")
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        resume_path = checkpoint_path
+    elif os.path.exists(mid_checkpoint_path):
+        resume_path = mid_checkpoint_path
+
+    if resume_path:
+        logger.info("Resuming from checkpoint: %s", resume_path)
+        checkpoint = torch.load(resume_path, map_location=device)
         model.load_state_dict(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         if "scheduler" in checkpoint:
             scheduler.load_state_dict(checkpoint["scheduler"])
-        start_epoch = checkpoint["epoch"]
-        best_val_loss = checkpoint["best_val_loss"]
+        start_epoch = int(checkpoint["epoch"])
+        best_val_loss = float(checkpoint["best_val_loss"])
+        if resume_path == mid_checkpoint_path:
+            resume_batch = int(checkpoint.get(
+                "batches_completed",
+                config.get("resume_mid_epoch_batch", 0),
+            ))
+            logger.info(
+                "Resuming epoch %d at batch %d",
+                start_epoch + 1,
+                resume_batch,
+            )
 
     epochs = config.get("epochs", 10)
     log_every = config.get("log_every", 5000)
@@ -654,13 +730,19 @@ def main():
     for epoch in range(start_epoch, epochs):
 
         logger.info("\nEpoch %d/%d", epoch + 1, epochs)
-        train_sampler.set_epoch(epoch)
+        epoch_resume_batch = resume_batch if epoch == start_epoch else 0
+        resume_position = min(epoch_resume_batch * batch_size, train_size)
+        train_sampler.set_epoch(epoch, resume_position)
         model.train()
 
         train_loss = 0.0
+        processed_batches = 0
         start_time = time.time()
+        full_epoch_batches = (train_size + batch_size - 1) // batch_size
 
-        for batch_idx, (xb_stm, xb_nstm, yb) in enumerate(train_loader):
+        for local_batch_idx, (xb_stm, xb_nstm, yb) in enumerate(train_loader):
+
+            batch_idx = epoch_resume_batch + local_batch_idx
 
             xb_stm = xb_stm.to(device)
             xb_nstm = xb_nstm.to(device)
@@ -699,6 +781,7 @@ def main():
                 optimizer.step()
 
             train_loss += loss.item()
+            processed_batches += 1
 
             # progress logging
             # Determine triggers
@@ -719,8 +802,8 @@ def main():
                 if log_trigger:
 
                     elapsed = time.time() - start_time
-                    rate = batch_idx / elapsed
-                    remaining = (len(train_loader) - batch_idx) / rate
+                    rate = processed_batches / elapsed
+                    remaining = (full_epoch_batches - batch_idx) / rate
 
                     elapsed_h = int(elapsed // 3600)
                     elapsed_m = int((elapsed % 3600) // 60)
@@ -728,8 +811,8 @@ def main():
 
                     message = (
                         f"Epoch {epoch+1} | "
-                        f"{batch_idx}/{len(train_loader)} "
-                        f"({100*batch_idx/len(train_loader):.1f}%) | "
+                        f"{batch_idx}/{full_epoch_batches} "
+                        f"({100*batch_idx/full_epoch_batches:.1f}%) | "
                         f"{rate:.1f} it/s | "
                         f"Elapsed {elapsed_h:02d}:{elapsed_m:02d}:{elapsed_s:02d} | "
                         f"ETA {remaining/60:.1f} min"
@@ -740,6 +823,7 @@ def main():
 
                     state = {
                         "epoch": epoch,
+                        "batches_completed": batch_idx + 1,
                         "model": model.state_dict(),
                         "optimizer": optimizer.state_dict(),
                         "scheduler": scheduler.state_dict(),
@@ -753,14 +837,20 @@ def main():
                     if not message:
                         # If checkpoint fires without log firing,
                         # build minimal message so formatting stays clean
-                        message = f"Epoch {epoch+1} | {batch_idx}/{len(train_loader)}"
+                        message = (
+                            f"Epoch {epoch+1} | "
+                            f"{batch_idx}/{full_epoch_batches}"
+                        )
 
                     message += " | checkpoint saved"
 
                 logger.info(message)
         # ---- end batch loop ----
 
-        train_loss /= len(train_loader)
+        if processed_batches == 0:
+            raise RuntimeError("no training batches were processed")
+        train_loss /= processed_batches
+        resume_batch = 0
 
         # Validation
         model.eval()
