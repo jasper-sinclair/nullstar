@@ -10,6 +10,7 @@
 #   3. Compares both representations
 #   4. Verifies result value matches
 
+import math
 import struct
 import random
 import numpy as np
@@ -67,11 +68,13 @@ def parse_epd_line(line):
         return None, None
 
     try:
-        fen_part, score_part = line.split("|", 1)
+        fen_part, score_part = line.rsplit("|", 1)
         fen = " ".join(fen_part.strip().split()[:4])
         result = float(score_part.strip())
+        if not math.isfinite(result) or not 0.0 <= result <= 1.0:
+            return None, None
         return fen, result
-    except:
+    except (IndexError, ValueError):
         return None, None
 
 
@@ -129,7 +132,7 @@ def build_filtered_dataset(epd_path, sample_limit=0):
 
     # Match convert_to_sparse.py behavior:
     # load all lines first
-    with open(epd_path, "r") as f:
+    with open(epd_path, "r", encoding="utf-8", newline="") as f:
         for line in f:
 
             fen, result = parse_epd_line(line)
@@ -154,6 +157,7 @@ def build_filtered_dataset(epd_path, sample_limit=0):
 def compute_offsets(sparse_path, scan_limit=0):
 
     offsets = []
+    file_size = os.path.getsize(sparse_path)
 
     with open(sparse_path, "rb") as f:
 
@@ -165,10 +169,19 @@ def compute_offsets(sparse_path, scan_limit=0):
             if not header:
                 break
 
+            if len(header) != 2:
+                raise ValueError("truncated sparse record header")
+
             n_stm = header[0]
             n_nstm = header[1]
+            if not 2 <= n_stm <= 32 or n_nstm != n_stm:
+                raise ValueError(
+                    f"invalid sparse feature counts at byte offset {pos:,}"
+                )
 
             record_size = 2 + 2 * n_stm + 2 * n_nstm + 4
+            if pos + record_size > file_size:
+                raise ValueError("truncated sparse record payload")
 
             offsets.append(pos)
 
@@ -214,7 +227,10 @@ def main():
     print("Filtered dataset size:", len(dataset))
 
     if len(dataset) != len(offsets):
-        print("WARNING: dataset sizes differ")
+        raise ValueError(
+            "text and sparse verification sample sizes differ: "
+            f"{len(dataset)} != {len(offsets)}"
+        )
 
     if not dataset or not offsets:
         raise SystemExit("No matching records available for verification")
@@ -270,16 +286,13 @@ def main():
         x_nstm_bin[list(nstm_indices)] = 1.0
 
         if not np.allclose(x_stm_txt, x_stm_bin):
-            print("Mismatch at index", idx)
-            print("TXT active:", np.nonzero(x_stm_txt)[0][:10])
-            print("BIN active:", np.nonzero(x_stm_bin)[0][:10])
-            break
+            raise ValueError(f"side-to-move feature mismatch at index {idx}")
+        if not np.allclose(x_nstm_txt, x_nstm_bin):
+            raise ValueError(f"opponent feature mismatch at index {idx}")
+        if abs(expected_result - result_bin) >= 1e-6:
+            raise ValueError(f"training-label mismatch at index {idx}")
 
-        assert np.allclose(x_stm_txt, x_stm_bin)
-        assert np.allclose(x_nstm_txt, x_nstm_bin)
-        assert abs(expected_result - result_bin) < 1e-6
-
-    print("✅ Verification passed.")
+    print("Sparse feature verification passed.")
 
 
 if __name__ == "__main__":

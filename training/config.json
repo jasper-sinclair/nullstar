@@ -16,6 +16,7 @@
   "training_file": "training_sparse_stm.bin",
   "label_perspective": "side_to_move",
   "shuffle_training": true,
+  "verify_shuffled_training": true,
   "corpus_manifest": "..\\DATA\\MASTER\\training_stm.txt.manifest.json",
   "require_corpus_manifest": true,
   "verify_corpus_sha256": true,
@@ -37,6 +38,7 @@
   "best_model_path": "best_model_stm_base.pt",
   "export_path": "network_stm_base.bin",
   "log_path": "training_stm_base.log",
+  "pipeline_log_path": "training_stm_base_pipeline.log",
   "save_epoch_networks": true,
 
   "skip_invalid": false,

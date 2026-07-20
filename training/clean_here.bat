@@ -71,6 +71,7 @@ call :remove "network_stm_base.bin.tmp"
 call :remove "network_stm_base_epoch_*.bin"
 call :remove "network_stm_base_epoch_*.bin.tmp"
 call :remove "training_stm_base.log"
+call :remove "training_stm_base_pipeline.log"
 goto :complete
 
 :smoke
@@ -89,7 +90,9 @@ call :remove "smoke\network_stm_smoke_1m.bin.tmp"
 call :remove "smoke\network_stm_smoke_1m_epoch_*.bin"
 call :remove "smoke\network_stm_smoke_1m_epoch_*.bin.tmp"
 call :remove "smoke\training_sparse_stm_smoke_1m.bin"
+call :remove "smoke\training_sparse_stm_smoke_1m.bin.part"
 call :remove "smoke\training_stm_smoke_1m.log"
+call :remove "smoke\training_stm_smoke_1m_pipeline.log"
 goto :complete
 
 :derived
@@ -101,7 +104,9 @@ echo They will have to be rebuilt before the next full training run.
 call :confirm || goto :quit
 
 call :remove "training_shuffled_stm.txt"
+call :remove "training_shuffled_stm.txt.part"
 call :remove "training_sparse_stm.bin"
+call :remove "training_sparse_stm.bin.part"
 goto :complete
 
 :confirm

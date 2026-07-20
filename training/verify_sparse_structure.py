@@ -20,10 +20,10 @@
 #
 # If any index is outside this range, the dataset is corrupted.
 
-import struct
 import json
+import math
 import os
-import random
+import struct
 
 INPUT_SIZE = 768
 
@@ -81,11 +81,19 @@ def main():
 
             # Safety check for truncated file
             if len(header) < 2:
-                print("WARNING: truncated record header")
-                break
+                print("ERROR: truncated record header")
+                return 1
 
             # Number of sparse features for each perspective
             n_stm, n_nstm = header
+            if not 2 <= n_stm <= 32 or n_nstm != n_stm:
+                print(
+                    "ERROR: invalid feature counts at record",
+                    f"{checked + 1:,}",
+                    n_stm,
+                    n_nstm,
+                )
+                return 1
 
             # -------------------------
             # Verify side-to-move feature indices
@@ -96,15 +104,15 @@ def main():
                 data = f.read(2)
 
                 if len(data) < 2:
-                    print("WARNING: truncated side-to-move index")
-                    return
+                    print("ERROR: truncated side-to-move index")
+                    return 1
 
                 idx = struct.unpack("<H", data)[0]
 
                 # Feature index must be within NNUE input range
                 if idx >= INPUT_SIZE:
-                    print("BAD INDEX", idx)
-                    return
+                    print("ERROR: bad side-to-move index", idx)
+                    return 1
 
             # -------------------------
             # Verify opponent feature indices
@@ -114,21 +122,26 @@ def main():
                 data = f.read(2)
 
                 if len(data) < 2:
-                    print("WARNING: truncated opponent index")
-                    return
+                    print("ERROR: truncated opponent index")
+                    return 1
 
                 idx = struct.unpack("<H", data)[0]
 
                 if idx >= INPUT_SIZE:
-                    print("BAD INDEX", idx)
-                    return
+                    print("ERROR: bad opponent index", idx)
+                    return 1
 
             # Skip result value (float32)
             result_bytes = f.read(4)
 
             if len(result_bytes) < 4:
-                print("WARNING: truncated result value")
-                return
+                print("ERROR: truncated result value")
+                return 1
+
+            result = struct.unpack("<f", result_bytes)[0]
+            if not math.isfinite(result) or not 0.0 <= result <= 1.0:
+                print("ERROR: invalid result at record", f"{checked + 1:,}")
+                return 1
 
             checked += 1
 
@@ -136,9 +149,12 @@ def main():
             if progress_interval and checked % progress_interval == 0:
                 print(f"checked {checked:,} records")
 
-    print("Dataset OK")
+    print("Verified sparse structure OK")
     print("Records checked:", checked)
+    if sample_limit:
+        print("Verification limit:", sample_limit)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

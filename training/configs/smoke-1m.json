@@ -16,6 +16,7 @@
   "training_file": "smoke\\training_sparse_stm_smoke_1m.bin",
   "label_perspective": "side_to_move",
   "shuffle_training": false,
+  "verify_shuffled_training": true,
   "corpus_manifest": "..\\DATA\\MASTER\\training_stm.txt.manifest.json",
   "require_corpus_manifest": true,
   "verify_corpus_sha256": true,
@@ -29,6 +30,7 @@
   "best_model_path": "smoke\\best_model_stm_smoke_1m.pt",
   "export_path": "smoke\\network_stm_smoke_1m.bin",
   "log_path": "smoke\\training_stm_smoke_1m.log",
+  "pipeline_log_path": "smoke\\training_stm_smoke_1m_pipeline.log",
   "save_epoch_networks": false,
 
   "skip_invalid": false,

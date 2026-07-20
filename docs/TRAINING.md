@@ -122,11 +122,13 @@ python run_pipeline.py configs\smoke-1m.json
 
 The pipeline validates the text data, shuffles it, converts it to
 `training_sparse.bin`, validates both the binary structure and sparse feature
-orientation, and runs `train.py`. Perspective meaning cannot be inferred from
-FEN and label values alone, so `label_perspective` must agree with the source
-corpus or its generated manifest. `check_selfplay_perspective_features.py` is
-only applicable to unmodified native Nullstar self-play and may be run
-independently.
+orientation, and runs `train.py`. A shuffled corpus is fully validated again
+before conversion. Shuffled and sparse outputs are written to `.part` files
+and replace their final paths only after successful completion. Perspective
+meaning cannot be inferred from FEN and label values alone, so
+`label_perspective` must agree with the source corpus or its generated
+manifest. `check_selfplay_perspective_features.py` is only applicable to
+unmodified native Nullstar self-play and may be run independently.
 
 `verification_scan_limit` and `structure_verify_limit` bound the independent
 sparse-data audits without limiting the dataset used by `train.py`. Set either
@@ -141,6 +143,8 @@ The current full STM profile writes:
 - `network_stm_base.bin`: best quantized network for the engine;
 - `network_stm_base_epoch_*.bin`: optional per-epoch exports;
 - `training_stm_base.log`: progress and validation losses.
+- `training_stm_base_pipeline.log`: persistent validation, shuffling,
+  conversion, verification, and training console output.
 
 The trainer resumes automatically when its configured checkpoint exists. Move
 or clean that checkpoint before intentionally starting a fresh experiment.

@@ -27,6 +27,7 @@ if exist "smoke\checkpoint_stm_smoke_1m.pt" (
 
 python run_pipeline.py configs\smoke-1m.json
 set "result=%errorlevel%"
+echo Pipeline log: %CD%\smoke\training_stm_smoke_1m_pipeline.log
 
 echo.
 if not "%result%"=="0" goto :pipeline_error

@@ -46,7 +46,7 @@ def piece_count(placement):
 
 def split_record(line):
     if "|" in line:
-        fen, label = line.split("|", 1)
+        fen, label = line.rsplit("|", 1)
         return fen.strip(), label.strip()
 
     if "[" in line and "]" in line:
@@ -96,6 +96,17 @@ def main():
     bucket_counts = Counter()
     piece_count_total = 0
     boards_seen = set()
+    first_errors = []
+    error_limit = int(config.get("verification_error_examples", 5))
+
+    def remember(kind, line_number, value):
+        if len(first_errors) >= error_limit:
+            return
+        if isinstance(value, bytes):
+            preview = value[:240].decode("utf-8", errors="backslashreplace")
+        else:
+            preview = str(value)[:240]
+        first_errors.append((kind, line_number, preview.rstrip()))
 
     start = time.time()
     last_print = start
@@ -106,32 +117,38 @@ def main():
 
             if b"\x1a" in raw_line:
                 ctrlz += 1
+                remember("Ctrl-Z marker", total, raw_line)
 
             try:
                 line = raw_line.decode("utf-8").strip()
             except UnicodeDecodeError:
                 decode_errors += 1
+                remember("UTF-8 decode error", total, raw_line)
                 continue
 
             fen, label_text = split_record(line)
             if label_text is None:
                 bad_label += 1
+                remember("bad label", total, line)
                 continue
 
             try:
                 label = float(label_text)
             except (TypeError, ValueError):
                 bad_label += 1
+                remember("bad label", total, line)
                 continue
 
             if not math.isfinite(label) or not 0.0 <= label <= 1.0:
                 bad_label += 1
+                remember("out-of-range label", total, line)
                 continue
 
             tokens = fen.split()
             if (len(tokens) < 2 or tokens[1] not in {"w", "b"}
                     or not valid_placement(tokens[0])):
                 bad_fen += 1
+                remember("broken FEN", total, line)
                 continue
 
             placement, side = tokens[0], tokens[1]
@@ -184,6 +201,11 @@ def main():
     print("Bad labels:", bad_label)
     print("Decode errors:", decode_errors)
     print("Ctrl-Z markers:", ctrlz)
+
+    if first_errors:
+        print("\nFirst invalid records:")
+        for kind, line_number, preview in first_errors:
+            print(f" {kind} at line {line_number:,}: {preview!r}")
     print(f"\nFinished in {time.time() - start:.1f}s")
 
     return 1 if bad_fen or bad_label or decode_errors or ctrlz else 0

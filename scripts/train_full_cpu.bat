@@ -27,6 +27,7 @@ python run_pipeline.py
 set "result=%errorlevel%"
 
 echo.
+echo Pipeline log: %CD%\training_stm_base_pipeline.log
 if "%result%"=="0" (
   echo Full training pipeline completed successfully.
 ) else (

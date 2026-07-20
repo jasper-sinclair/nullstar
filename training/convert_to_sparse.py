@@ -86,13 +86,13 @@ def parse_epd_line(line):
     # -----------------------------------------
     if "|" in line:
         try:
-            fen_part, score_part = line.split("|", 1)
+            fen_part, score_part = line.rsplit("|", 1)
             fen = " ".join(fen_part.strip().split()[:4])
             result = float(score_part.strip())
             if not math.isfinite(result) or not 0.0 <= result <= 1.0:
                 return None, None
             return fen, result
-        except:
+        except (IndexError, ValueError):
             pass
 
 
@@ -115,7 +115,7 @@ def parse_epd_line(line):
             tokens = line.split()
             fen = " ".join(tokens[:4])
             return fen, result
-        except:
+        except (IndexError, ValueError):
             pass
 
 
@@ -128,7 +128,7 @@ def parse_epd_line(line):
             tokens = line.split()
             fen = " ".join(tokens[:4])
             return fen, result
-        except:
+        except (IndexError, ValueError):
             pass
 
 
@@ -147,12 +147,11 @@ def parse_epd_line(line):
                 result = val
             else:
                 # Convert centipawn to probability
-                import math
                 result = 1.0 / (1.0 + math.exp(-val / 400.0))
 
             fen = " ".join(tokens[:4])
             return fen, result
-        except:
+        except (OverflowError, ValueError):
             pass
 
 
@@ -260,64 +259,70 @@ def convert(
     valid = 0
     invalid = 0
 
-    total_lines = (
-        sample_limit
-        if sample_limit > 0
-        else sum(1 for _ in open(input_path, "r"))
-    )
+    if sample_limit > 0:
+        total_lines = sample_limit
+    else:
+        with open(input_path, "r", encoding="utf-8", newline="") as source:
+            total_lines = sum(1 for _ in source)
 
-    with open(input_path, "r") as fin, open(output_path, "wb") as fout:
+    temporary_path = output_path + ".part"
+    try:
+        with open(
+            input_path, "r", encoding="utf-8", newline=""
+        ) as fin, open(temporary_path, "wb") as fout:
+            for i, line in enumerate(tqdm(fin, total=total_lines)):
+                if sample_limit > 0 and i >= sample_limit:
+                    break
 
-        for i, line in enumerate(tqdm(fin, total=total_lines)):
+                fen, result = parse_epd_line(line)
+                if fen is None:
+                    invalid += 1
+                    if not skip_invalid:
+                        preview = line.rstrip()[:240]
+                        raise ValueError(
+                            f"invalid training record at line {i + 1:,}: "
+                            f"{preview!r}"
+                        )
+                    continue
 
-            # Optional dataset size limit
-            if sample_limit > 0 and i >= sample_limit:
-                break
+                try:
+                    stm_indices, nstm_indices, result = orient_position(
+                        fen, result, label_perspective
+                    )
+                except ValueError as error:
+                    invalid += 1
+                    if not skip_invalid:
+                        preview = line.rstrip()[:240]
+                        raise ValueError(
+                            f"invalid training record at line {i + 1:,}: "
+                            f"{preview!r}"
+                        ) from error
+                    continue
 
-            fen, result = parse_epd_line(line)
+                record = bytearray()
+                record += struct.pack("B", len(stm_indices))
+                record += struct.pack("B", len(nstm_indices))
 
-            if fen is None:
-                invalid += 1
-                if not skip_invalid:
-                    raise ValueError(f"invalid training record at line {i + 1:,}")
-                continue
+                if stm_indices:
+                    record += struct.pack(
+                        f"<{len(stm_indices)}H", *stm_indices
+                    )
+                if nstm_indices:
+                    record += struct.pack(
+                        f"<{len(nstm_indices)}H", *nstm_indices
+                    )
 
-            try:
-                stm_indices, nstm_indices, result = orient_position(
-                    fen, result, label_perspective
-                )
-            except ValueError as error:
-                invalid += 1
-                if not skip_invalid:
-                    raise ValueError(
-                        f"invalid training record at line {i + 1:,}"
-                    ) from error
-                continue
+                record += struct.pack("<f", result)
+                fout.write(record)
+                valid += 1
 
-            # ---------------------------------
-            # Write binary record
-            # ---------------------------------
+            fout.flush()
+            os.fsync(fout.fileno())
 
-            record = bytearray()
-
-            # Write feature counts
-            record += struct.pack("B", len(stm_indices))
-            record += struct.pack("B", len(nstm_indices))
-
-            # Write side-to-move feature indices (uint16) - batch packed
-            if stm_indices:
-                record += struct.pack(f"<{len(stm_indices)}H", *stm_indices)
-
-            # Write opponent feature indices (uint16) - batch packed
-            if nstm_indices:
-                record += struct.pack(f"<{len(nstm_indices)}H", *nstm_indices)
-
-            # Write training target (float32)
-            record += struct.pack("<f", result)
-
-            fout.write(record)
-
-            valid += 1
+        os.replace(temporary_path, output_path)
+    except Exception:
+        print(f"Incomplete sparse output retained as: {temporary_path}")
+        raise
 
     return valid, invalid
 
