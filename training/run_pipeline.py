@@ -1,6 +1,7 @@
 # run_pipeline.py
 # jasper sinclair
 
+import argparse
 import codecs
 import json
 import locale
@@ -45,7 +46,7 @@ def pipeline_log_path(config):
     return root + "_pipeline" + (extension or ".log")
 
 
-def build_pipeline(config):
+def build_pipeline(config, start_at=None):
     pipeline = [
         ["verify_corpus_manifest.py"],
         ["verify_training_txt.py"],
@@ -63,12 +64,18 @@ def build_pipeline(config):
         ["verify_sparse_features.py"],
         ["train.py"],
     ])
+    if start_at:
+        for index, command in enumerate(pipeline):
+            if command[0] == start_at:
+                return pipeline[index:]
+        raise ValueError(f"pipeline step not found: {start_at}")
     return pipeline
 
 
 def prepare_directories(config):
     for key in (
         "training_file",
+        "offset_index_path",
         "shuffle_output",
         "checkpoint_path",
         "mid_checkpoint_path",
@@ -123,11 +130,22 @@ def run_step(command, environment):
 
 
 def main():
-    config_path = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.environ.get(CONFIG_ENV, "config.json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config", nargs="?")
+    parser.add_argument(
+        "--start-at",
+        choices=(
+            "verify_corpus_manifest.py",
+            "verify_training_txt.py",
+            "shuffle_training_txt.py",
+            "convert_to_sparse.py",
+            "verify_sparse_structure.py",
+            "verify_sparse_features.py",
+            "train.py",
+        ),
     )
+    arguments = parser.parse_args()
+    config_path = arguments.config or os.environ.get(CONFIG_ENV, "config.json")
     config_path = os.path.abspath(config_path)
     config = load_config(config_path)
     prepare_directories(config)
@@ -138,6 +156,7 @@ def main():
     environment[CONFIG_ENV] = config_path
     environment["PYTHONIOENCODING"] = "utf-8"
     environment["PYTHONUNBUFFERED"] = "1"
+    environment["PYTHONFAULTHANDLER"] = "1"
 
     original_stdout = sys.stdout
     original_stderr = sys.stderr
@@ -150,8 +169,9 @@ def main():
             print("Configuration:", config_path)
             print("Pipeline log:", transcript_path)
             print("Shuffle training data:", config.get("shuffle_training", True))
+            print("Starting step:", arguments.start_at or "beginning")
 
-            for command in build_pipeline(config):
+            for command in build_pipeline(config, arguments.start_at):
                 run_step(command, environment)
 
             print("\n==============================")

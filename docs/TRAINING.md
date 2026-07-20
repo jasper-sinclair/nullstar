@@ -108,6 +108,10 @@ established environment and run the corresponding configuration:
 
 ```text
 train_full_cpu.bat       full corpus, 20 epochs
+train_existing_full_cpu.bat
+                         train/resume from verified full sparse data
+train_existing_smoke_1m_cpu.bat
+                         trainer-only smoke test using verified sparse data
 train_smoke_1m_cpu.bat   first 1,000,000 records, 1 epoch, no text shuffle
 ```
 
@@ -148,6 +152,11 @@ The current full STM profile writes:
 
 The trainer resumes automatically when its configured checkpoint exists. Move
 or clean that checkpoint before intentionally starting a fresh experiment.
+For datasets too large for Python index lists, the trainer builds and reuses a
+disk-backed `uint64` record-offset index. Its block sampler changes training
+order each epoch without allocating a full-record permutation. Use
+`train_existing_full_cpu.bat` after a training-only failure when the atomic
+full sparse file has already passed pipeline verification.
 
 `clean_here.bat` provides separately confirmed cleanup modes for legacy Set
 006 artifacts, the current full STM training state, the isolated smoke test,

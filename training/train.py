@@ -12,7 +12,8 @@ import torch.optim as optim
 torch.backends.cudnn.benchmark = True
 torch.set_float32_matmul_precision('high')
 
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import DataLoader, Dataset, Sampler
+from array import array
 import numpy as np
 import struct
 import mmap
@@ -73,6 +74,11 @@ PIECE_TO_INDEX = {
     "q": 4,
     "k": 5,
 }
+
+OFFSET_INDEX_KIND = "nullstar-sparse-offsets-v1"
+OFFSET_DTYPE = "<u8"
+OFFSET_WRITE_CHUNK = 1_000_000
+OFFSET_PROGRESS_INTERVAL = 10_000_000
 
 
 # =========================
@@ -149,69 +155,234 @@ def build_features(fen, perspective):
 # =========================
 
 
-class SparseDataset(Dataset):
-    """
-    Memory-mapped sparse dataset.
+def offset_index_metadata(path, record_count, complete):
+    stat = os.stat(path)
+    return {
+        "kind": OFFSET_INDEX_KIND,
+        "sparse_path": os.path.abspath(path),
+        "sparse_bytes": stat.st_size,
+        "sparse_mtime_ns": stat.st_mtime_ns,
+        "records": record_count,
+        "complete": bool(complete),
+    }
 
-    Record layout:
-        uint8  n_stm
-        uint8  n_nstm
-        uint16 stm_indices[n_stm]
-        uint16 nstm_indices[n_nstm]
-        float32 result
-    """
+
+def write_json_atomic(path, value):
+    temporary_path = path + ".part"
+    with open(temporary_path, "w", encoding="utf-8", newline="\n") as target:
+        json.dump(value, target, indent=2)
+        target.write("\n")
+        target.flush()
+        os.fsync(target.fileno())
+    os.replace(temporary_path, path)
+
+
+def valid_offset_index(
+    sparse_path, index_path, metadata_path, required_records=0
+):
+    if not os.path.isfile(index_path) or not os.path.isfile(metadata_path):
+        return None
+
+    try:
+        with open(metadata_path, encoding="utf-8") as source:
+            metadata = json.load(source)
+        stat = os.stat(sparse_path)
+        records = int(metadata["records"])
+        if (
+            metadata.get("kind") != OFFSET_INDEX_KIND
+            or int(metadata.get("sparse_bytes", -1)) != stat.st_size
+            or int(metadata.get("sparse_mtime_ns", -1)) != stat.st_mtime_ns
+            or records <= 0
+            or os.path.getsize(index_path) != records * 8
+            or (
+                int(required_records) > 0
+                and records < int(required_records)
+                and not bool(metadata.get("complete", False))
+            )
+            or (
+                int(required_records) <= 0
+                and not bool(metadata.get("complete", False))
+            )
+        ):
+            return None
+        return records
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def flush_offset_chunk(target, values):
+    if not values:
+        return
+    if sys.byteorder != "little":
+        values.byteswap()
+    values.tofile(target)
+
+
+def build_offset_index(
+    sparse_path, index_path, metadata_path, record_limit=0
+):
+    sparse_size = os.path.getsize(sparse_path)
+    temporary_index = index_path + ".part"
+    os.makedirs(os.path.dirname(os.path.abspath(index_path)), exist_ok=True)
+
+    logger.info("Building compact sparse offset index: %s", index_path)
+    logger.info("Sparse dataset bytes: %d", sparse_size)
+
+    started = time.time()
+    record_count = 0
+    offset = 0
+    values = array("Q")
+
+    try:
+        with open(
+            sparse_path, "rb", buffering=8 * 1024 * 1024
+        ) as source, open(
+            temporary_index, "wb", buffering=8 * 1024 * 1024
+        ) as target:
+            while (
+                offset < sparse_size
+                and (int(record_limit) <= 0 or record_count < int(record_limit))
+            ):
+                header = source.read(2)
+                if len(header) != 2:
+                    raise ValueError(
+                        f"truncated sparse header at record {record_count + 1:,}"
+                    )
+
+                n_stm, n_nstm = header
+                if not 2 <= n_stm <= 32 or n_nstm != n_stm:
+                    raise ValueError(
+                        "invalid sparse counts at record "
+                        f"{record_count + 1:,}: {n_stm}, {n_nstm}"
+                    )
+
+                record_size = 2 + 2 * n_stm + 2 * n_nstm + 4
+                if offset + record_size > sparse_size:
+                    raise ValueError(
+                        f"truncated sparse payload at record {record_count + 1:,}"
+                    )
+
+                values.append(offset)
+                record_count += 1
+                offset += record_size
+                source.seek(record_size - 2, os.SEEK_CUR)
+
+                if len(values) >= OFFSET_WRITE_CHUNK:
+                    flush_offset_chunk(target, values)
+                    values = array("Q")
+
+                if record_count % OFFSET_PROGRESS_INTERVAL == 0:
+                    elapsed = max(time.time() - started, 1e-9)
+                    logger.info(
+                        "Indexed %d records (%.1f%%, %.0f records/s)",
+                        record_count,
+                        100.0 * offset / sparse_size,
+                        record_count / elapsed,
+                    )
+
+            flush_offset_chunk(target, values)
+            target.flush()
+            os.fsync(target.fileno())
+
+        os.replace(temporary_index, index_path)
+        complete = offset == sparse_size
+        write_json_atomic(
+            metadata_path,
+            offset_index_metadata(sparse_path, record_count, complete),
+        )
+    except Exception:
+        logger.exception("Failed while building sparse offset index")
+        raise
+
+    logger.info(
+        "Sparse offset index ready: %d records in %.1fs (%.1f MiB)",
+        record_count,
+        time.time() - started,
+        os.path.getsize(index_path) / (1024 * 1024),
+    )
+    return record_count
+
+
+class SparseDataset(Dataset):
+    """Memory-mapped sparse records with a disk-backed uint64 offset index."""
+
+    def __init__(self, path, sample_limit=0, index_path=None):
+        self.path = os.path.abspath(path)
+        self.index_path = os.path.abspath(index_path or (path + ".offsets.u64"))
+        self.metadata_path = self.index_path + ".json"
+        self.file = None
+        self.mm = None
+        self.offsets = None
+
+        record_count = valid_offset_index(
+            self.path,
+            self.index_path,
+            self.metadata_path,
+            int(sample_limit),
+        )
+        if record_count is None:
+            record_count = build_offset_index(
+                self.path,
+                self.index_path,
+                self.metadata_path,
+                int(sample_limit),
+            )
+        else:
+            logger.info("Using existing sparse offset index: %s", self.index_path)
+
+        self.index_records = record_count
+        self.length = (
+            min(record_count, int(sample_limit))
+            if int(sample_limit) > 0
+            else record_count
+        )
+        self._open_resources()
+        logger.info("Dataset size: %d", self.length)
+
+    def _open_resources(self):
+        if self.offsets is None:
+            self.offsets = np.memmap(
+                self.index_path,
+                dtype=OFFSET_DTYPE,
+                mode="r",
+                shape=(self.index_records,),
+            )
+        if self.mm is None:
+            self.file = open(self.path, "rb")
+            self.mm = mmap.mmap(self.file.fileno(), 0, access=mmap.ACCESS_READ)
 
     def __getstate__(self):
         state = self.__dict__.copy()
         state["file"] = None
         state["mm"] = None
+        state["offsets"] = None
         return state
 
-    def __init__(self, path, sample_limit=0):
-        self.path = path
-        self.offsets = []
+    def close(self):
+        if self.mm is not None:
+            self.mm.close()
+            self.mm = None
+        if self.file is not None:
+            self.file.close()
+            self.file = None
+        if self.offsets is not None:
+            mapped = getattr(self.offsets, "_mmap", None)
+            if mapped is not None:
+                mapped.close()
+            self.offsets = None
 
-        # Build offset table
-        with open(path, "rb") as f:
-            offset = 0
-            size = f.seek(0, 2)
-            f.seek(0)
-
-            while offset < size:
-                self.offsets.append(offset)
-
-                f.seek(offset)
-                n_stm = struct.unpack("B", f.read(1))[0]
-                n_nstm = struct.unpack("B", f.read(1))[0]
-
-                record_size = (
-                    2                  # two uint8 counts
-                    + 2 * n_stm        # side-to-move indices (uint16)
-                    + 2 * n_nstm       # opponent indices (uint16)
-                    + 4                # float32 result
-                )
-
-                offset += record_size
-
-        # Optional dataset size limit (useful for debugging large datasets)
-        if sample_limit > 0:
-            self.offsets = self.offsets[:sample_limit]
-
-        self.file = open(path, "rb")
-        self.mm = mmap.mmap(self.file.fileno(), 0, access=mmap.ACCESS_READ)
-
-        logger.info("Dataset size: %d", len(self.offsets))
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
 
     def __len__(self):
-        return len(self.offsets)
+        return self.length
 
     def __getitem__(self, idx):
-
-        if self.mm is None:
-            self.file = open(self.path, "rb")
-            self.mm = mmap.mmap(self.file.fileno(), 0, access=mmap.ACCESS_READ)
-
-        offset = self.offsets[idx]
+        self._open_resources()
+        offset = int(self.offsets[idx])
         ptr = offset
 
         n_stm = self.mm[ptr]
@@ -222,15 +393,17 @@ class SparseDataset(Dataset):
         x_stm = np.zeros(INPUT_SIZE, dtype=np.float32)
         x_nstm = np.zeros(INPUT_SIZE, dtype=np.float32)
 
-        stm_indices = np.frombuffer(self.mm, dtype=np.uint16, count=n_stm, offset=ptr)
+        stm_indices = np.frombuffer(
+            self.mm, dtype="<u2", count=n_stm, offset=ptr
+        )
         ptr += 2 * n_stm
-
-        nstm_indices = np.frombuffer(self.mm, dtype=np.uint16, count=n_nstm, offset=ptr)
+        nstm_indices = np.frombuffer(
+            self.mm, dtype="<u2", count=n_nstm, offset=ptr
+        )
         ptr += 2 * n_nstm
 
         x_stm[stm_indices] = 1.0
         x_nstm[nstm_indices] = 1.0
-
         result = struct.unpack_from("<f", self.mm, ptr)[0]
 
         return (
@@ -238,6 +411,51 @@ class SparseDataset(Dataset):
             torch.from_numpy(x_nstm),
             torch.tensor(result, dtype=torch.float32),
         )
+
+
+class DatasetRange(Dataset):
+    def __init__(self, dataset, start, length):
+        self.dataset = dataset
+        self.start = int(start)
+        self.length = int(length)
+
+    def __len__(self):
+        return self.length
+
+    def __getitem__(self, index):
+        return self.dataset[self.start + index]
+
+
+class BlockShuffleSampler(Sampler):
+    """Shuffle large, already-randomized data in blocks using bounded memory."""
+
+    def __init__(self, data_source, block_size=1_000_000, seed=42):
+        self.length = len(data_source)
+        self.block_size = int(block_size)
+        self.seed = int(seed)
+        self.epoch = 0
+        if self.block_size <= 0:
+            raise ValueError("sampler_block_size must be positive")
+
+    def __len__(self):
+        return self.length
+
+    def set_epoch(self, epoch):
+        self.epoch = int(epoch)
+
+    def __iter__(self):
+        block_count = (self.length + self.block_size - 1) // self.block_size
+        blocks = list(range(block_count))
+        generator = random.Random(self.seed + self.epoch)
+        generator.shuffle(blocks)
+
+        for block in blocks:
+            start = block * self.block_size
+            stop = min(start + self.block_size, self.length)
+            if generator.getrandbits(1):
+                yield from range(stop - 1, start - 1, -1)
+            else:
+                yield from range(start, stop)
 
 
 # =========================
@@ -350,23 +568,34 @@ def main():
 
     dataset = SparseDataset(
         config.get("training_file", "training_sparse.bin"),
-        config.get("dataset_sample_limit", 0)
+        config.get("dataset_sample_limit", 0),
+        config.get("offset_index_path"),
     )
 
     val_split = config.get("validation_split", 0.05)
     val_size = int(len(dataset) * val_split)
     train_size = len(dataset) - val_size
+    if train_size <= 0 or val_size <= 0:
+        raise ValueError(
+            f"invalid training/validation split: {train_size}, {val_size}"
+        )
 
-    train_set, val_set = random_split(
-        dataset,
-        [train_size, val_size],
-        generator=torch.Generator().manual_seed(config.get("seed", 42))
+    # The sparse corpus is already shuffled. Contiguous views avoid creating
+    # hundreds of millions of Python integer indices for random_split().
+    train_set = DatasetRange(dataset, 0, train_size)
+    val_set = DatasetRange(dataset, train_size, val_size)
+    train_sampler = BlockShuffleSampler(
+        train_set,
+        config.get("sampler_block_size", 1_000_000),
+        config.get("seed", 42),
     )
+    logger.info("Training positions: %d", train_size)
+    logger.info("Validation positions: %d", val_size)
 
     train_loader = DataLoader(
         train_set,
         batch_size=config.get("batch_size", 256),
-        shuffle=True,
+        sampler=train_sampler,
         num_workers=config.get("num_workers", 0),
         pin_memory=use_gpu
     )
@@ -425,6 +654,7 @@ def main():
     for epoch in range(start_epoch, epochs):
 
         logger.info("\nEpoch %d/%d", epoch + 1, epochs)
+        train_sampler.set_epoch(epoch)
         model.train()
 
         train_loss = 0.0

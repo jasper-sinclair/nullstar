@@ -14,6 +14,7 @@
   "raw_training_txt": "..\\DATA\\MASTER\\training_stm.txt",
   "training_txt": "training_shuffled_stm.txt",
   "training_file": "training_sparse_stm.bin",
+  "offset_index_path": "training_sparse_stm.offsets.u64",
   "label_perspective": "side_to_move",
   "shuffle_training": true,
   "verify_shuffled_training": true,
@@ -29,6 +30,7 @@
   "draw_drop_rate": 0.30,
 
   "seed": 42,
+  "sampler_block_size": 1000000,
 
   "shuffle_input": "..\\DATA\\MASTER\\training_stm.txt",
   "shuffle_output": "training_shuffled_stm.txt",

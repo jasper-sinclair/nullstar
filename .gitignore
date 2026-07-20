@@ -35,6 +35,8 @@ training.txt
 training_*.txt
 training_sparse.bin
 training/*.bin
+training/*.u64
+training/*.u64.json
 training/*.png
 *.epd
 *.pgn

@@ -1,3 +1,12 @@
 @echo off
 cd /d C:\DEV\NULLSTAR-TRAIN\TRAINING
-call nnue_gpu_env\Scripts\activate
+set "VIRTUAL_ENV=%CD%\nnue_gpu_env"
+set "NULLSTAR_PYTHON=%VIRTUAL_ENV%\Scripts\python.exe"
+if not exist "%NULLSTAR_PYTHON%" (
+  echo ERROR: GPU Python environment not found: %NULLSTAR_PYTHON%
+  exit /b 1
+)
+set "PYTHONHOME="
+set "PYTHONPATH="
+set "PATH=%VIRTUAL_ENV%\Scripts;%PATH%"
+exit /b 0

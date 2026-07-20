@@ -5,13 +5,12 @@ call "%~dp0cpu.bat"
 if errorlevel 1 goto :environment_error
 
 echo.
-echo Nullstar full STM training
+echo Nullstar training from existing full STM sparse data
 echo Working directory: %CD%
 echo Configuration: %CD%\config.json
 echo.
 
-if not exist "..\DATA\MASTER\training_stm.txt" goto :data_error
-if not exist "..\DATA\MASTER\training_stm.txt.manifest.json" goto :data_error
+if not exist "training_sparse_stm.bin" goto :data_error
 
 "%NULLSTAR_PYTHON%" -c "import sys, torch; print('Python:', sys.executable); print('PyTorch:', torch.__version__); print('Torch package:', torch.__file__); print('Training device: CPU')"
 if errorlevel 1 goto :environment_error
@@ -23,21 +22,22 @@ if exist "checkpoint_stm_base.pt" (
   if errorlevel 2 exit /b 0
 )
 
-"%NULLSTAR_PYTHON%" run_pipeline.py
+"%NULLSTAR_PYTHON%" run_pipeline.py --start-at train.py
 set "result=%errorlevel%"
 
 echo.
 echo Pipeline log: %CD%\training_stm_base_pipeline.log
+echo Training log: %CD%\training_stm_base.log
 if "%result%"=="0" (
-  echo Full training pipeline completed successfully.
+  echo Full training completed successfully.
 ) else (
-  echo Full training pipeline failed with exit code %result%.
+  echo Full training failed with exit code %result%.
 )
 pause
 exit /b %result%
 
 :data_error
-echo ERROR: The STM master corpus or its manifest is missing.
+echo ERROR: training_sparse_stm.bin is missing.
 pause
 exit /b 1
 

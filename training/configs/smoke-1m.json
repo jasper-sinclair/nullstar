@@ -14,6 +14,7 @@
   "raw_training_txt": "..\\DATA\\MASTER\\training_stm.txt",
   "training_txt": "..\\DATA\\MASTER\\training_stm.txt",
   "training_file": "smoke\\training_sparse_stm_smoke_1m.bin",
+  "offset_index_path": "smoke\\training_sparse_stm_smoke_1m.offsets.u64",
   "label_perspective": "side_to_move",
   "shuffle_training": false,
   "verify_shuffled_training": true,
@@ -24,6 +25,7 @@
   "dataset_sample_limit": 1000000,
   "validation_split": 0.05,
   "seed": 42,
+  "sampler_block_size": 10000,
 
   "checkpoint_path": "smoke\\checkpoint_stm_smoke_1m.pt",
   "mid_checkpoint_path": "smoke\\checkpoint_mid_epoch_stm_smoke_1m.pt",
