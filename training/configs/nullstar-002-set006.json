@@ -15,6 +15,7 @@
   "training_txt": "training_shuffled.txt",
   "training_file": "training_sparse.bin",
   "normalized_txt": "training_normalized.txt",
+  "label_perspective": "white",
 
   "dataset_sample_limit": 0,
   "max_hash": 20000000,

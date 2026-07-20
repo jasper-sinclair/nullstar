@@ -6,15 +6,19 @@
   "lr_patience": 3,
 
   "num_workers": 0,
-  "device": "auto",
+  "device": "cpu",
 
   "scale": 128,
   "l1_size": 256,
 
-  "raw_training_txt": "training.txt",
-  "training_txt": "training_shuffled.txt",
-  "training_file": "training_sparse.bin",
+  "raw_training_txt": "..\\DATA\\MASTER\\training_stm.txt",
+  "training_txt": "training_shuffled_stm.txt",
+  "training_file": "training_sparse_stm.bin",
   "label_perspective": "side_to_move",
+  "shuffle_training": true,
+  "corpus_manifest": "..\\DATA\\MASTER\\training_stm.txt.manifest.json",
+  "require_corpus_manifest": true,
+  "verify_corpus_sha256": true,
 
   "dataset_sample_limit": 0,
   "max_hash": 20000000,
@@ -25,15 +29,17 @@
 
   "seed": 42,
 
-  "shuffle_input": "training.txt",
-  "shuffle_output": "training_shuffled.txt",
+  "shuffle_input": "..\\DATA\\MASTER\\training_stm.txt",
+  "shuffle_output": "training_shuffled_stm.txt",
 
-  "checkpoint_path": "checkpoint.pt",
-  "best_model_path": "best_model.pt",
-  "export_path": "network.bin",
+  "checkpoint_path": "checkpoint_stm_base.pt",
+  "mid_checkpoint_path": "checkpoint_mid_epoch_stm_base.pt",
+  "best_model_path": "best_model_stm_base.pt",
+  "export_path": "network_stm_base.bin",
+  "log_path": "training_stm_base.log",
   "save_epoch_networks": true,
 
-  "skip_invalid": true,
+  "skip_invalid": false,
   "use_amp": true,
 
   "quiet_min_ply": 10,
@@ -44,10 +50,13 @@
   "grad_clip": 1.0,
   "feature_dropout": 0.0,
 
-  "verification_epd": "training_shuffled.txt",
+  "verification_epd": "training_shuffled_stm.txt",
   "verification_samples": 10,
+  "verification_scan_limit": 100000,
+  "structure_verify_limit": 1000000,
   "verify_progress_interval": 1000000,
   "verify_sample_limit": 0,
+  "verify_max_hash": 2000000,
   "verify_exact_label_distribution": false,
 
   "sf_score_scaling": 400.0,

@@ -29,18 +29,23 @@ import logging
 # =========================
 # Logs to both file and stdout for persistent training history.
 
-logger = logging.getLogger()
+logger = logging.getLogger("nullstar-training")
 logger.setLevel(logging.INFO)
-logger.handlers.clear()
 
-fh = logging.FileHandler("training.log", delay=False)
-fh.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
 
-ch = logging.StreamHandler(sys.stdout)
-ch.setFormatter(logging.Formatter("%(message)s"))
+def configure_logging(path):
+    logger.handlers.clear()
+    parent = os.path.dirname(os.path.abspath(path))
+    os.makedirs(parent, exist_ok=True)
 
-logger.addHandler(fh)
-logger.addHandler(ch)
+    file_handler = logging.FileHandler(path, delay=False)
+    file_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(logging.Formatter("%(message)s"))
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
 
 # =========================
@@ -319,8 +324,13 @@ def export_model(model, path, scale):
 
 def main():
 
-    config_path = sys.argv[1] if len(sys.argv) > 1 else "config.json"
+    config_path = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
+    )
     config = load_config(config_path)
+    configure_logging(config.get("log_path", "training.log"))
 
     set_seed(config.get("seed", 42))
 
@@ -390,6 +400,10 @@ def main():
 
     # Resume
     checkpoint_path = config.get("checkpoint_path", "checkpoint.pt")
+    mid_checkpoint_path = config.get(
+        "mid_checkpoint_path", "checkpoint_mid_epoch.pt"
+    )
+    export_path = config.get("export_path", "network.bin")
 
     if os.path.exists(checkpoint_path):
         logger.info("Resuming from checkpoint...")
@@ -502,9 +516,9 @@ def main():
                         "best_val_loss": best_val_loss,
                     }
 
-                    tmp_path = "checkpoint_mid_epoch.pt.tmp"
+                    tmp_path = mid_checkpoint_path + ".tmp"
                     torch.save(state, tmp_path)
-                    os.replace(tmp_path, "checkpoint_mid_epoch.pt")
+                    os.replace(tmp_path, mid_checkpoint_path)
 
                     if not message:
                         # If checkpoint fires without log firing,
@@ -555,8 +569,6 @@ def main():
 
             os.replace(tmp_path, best_path)
 
-            export_path = config.get("export_path", "network.bin")
-
             export_model(model, export_path, config.get("scale", 128))
 
             logger.info(f"Saved best model and exported {export_path}")
@@ -576,9 +588,10 @@ def main():
         os.replace(tmp_path, checkpoint_path)
 
         if config.get("save_epoch_networks", True):
+            export_root, export_extension = os.path.splitext(export_path)
             export_model(
                 model,
-                f"network_epoch_{epoch+1}.bin",
+                f"{export_root}_epoch_{epoch+1}{export_extension}",
                 config.get("scale", 128),
             )
 

@@ -45,7 +45,9 @@ __pycache__/
 *.pt
 *.pth
 *.tmp
+*.part
 *.log
+training/*.manifest.json
 network*.bin
 *_env/
 .venv/

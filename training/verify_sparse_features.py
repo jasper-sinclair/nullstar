@@ -46,7 +46,8 @@ PIECE_TO_INDEX = {
 # =========================
 
 
-def load_config(path="config.json"):
+def load_config(path=None):
+    path = path or os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
     if not os.path.exists(path):
         return {}
     with open(path, "r") as f:
@@ -150,7 +151,7 @@ def build_filtered_dataset(epd_path, sample_limit=0):
 # =========================
 
 
-def compute_offsets(sparse_path):
+def compute_offsets(sparse_path, scan_limit=0):
 
     offsets = []
 
@@ -171,6 +172,9 @@ def compute_offsets(sparse_path):
 
             offsets.append(pos)
 
+            if scan_limit and len(offsets) >= scan_limit:
+                break
+
             f.seek(record_size - 2, 1)
 
             pos += record_size
@@ -190,7 +194,7 @@ def main():
     sparse_path = config.get("training_file", "training_sparse.bin")
     epd_path = config.get("verification_epd", "quiet.epd")
 
-    dataset_sample_limit = config.get("dataset_sample_limit", 0)
+    verification_scan_limit = config.get("verification_scan_limit", 100000)
     verification_samples = config.get("verification_samples", 10)
     label_perspective = config.get("label_perspective", "side_to_move")
     random.seed(config.get("seed", 42))
@@ -198,19 +202,22 @@ def main():
     print("Sparse dataset:", sparse_path)
     print("EPD reference:", epd_path)
 
-    offsets = compute_offsets(sparse_path)
+    offsets = compute_offsets(sparse_path, verification_scan_limit)
 
     print("Binary dataset size:", len(offsets))
 
     dataset = build_filtered_dataset(
         epd_path,
-        dataset_sample_limit
+        verification_scan_limit
     )
 
     print("Filtered dataset size:", len(dataset))
 
     if len(dataset) != len(offsets):
         print("WARNING: dataset sizes differ")
+
+    if not dataset or not offsets:
+        raise SystemExit("No matching records available for verification")
 
     # =========================
     # Random verification

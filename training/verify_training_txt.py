@@ -12,7 +12,8 @@ from collections import Counter
 PIECES = frozenset("PNBRQKpnbrqk")
 
 
-def load_config(path="config.json"):
+def load_config(path=None):
+    path = path or os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
     if not os.path.exists(path):
         return {}
     with open(path, encoding="utf-8") as source:
@@ -66,7 +67,7 @@ def main():
     dataset_path = config.get("raw_training_txt", "training.txt")
     max_sample = int(config.get("verify_sample_limit", 500000))
     show_exact = bool(config.get("verify_exact_label_distribution", True))
-    max_hash = int(config.get("max_hash", 5_000_000))
+    max_hash = int(config.get("verify_max_hash", 2_000_000))
 
     if len(sys.argv) > 1:
         dataset_path = sys.argv[1]
@@ -93,7 +94,7 @@ def main():
 
     label_counts = Counter()
     bucket_counts = Counter()
-    piece_counts = []
+    piece_count_total = 0
     boards_seen = set()
 
     start = time.time()
@@ -139,7 +140,7 @@ def main():
             if show_exact:
                 label_counts[label] += 1
             bucket_counts[int(label * 100) / 100.0] += 1
-            piece_counts.append(piece_count(placement))
+            piece_count_total += piece_count(placement)
 
             key = f"{placement} {side}"
             if key in boards_seen:
@@ -176,7 +177,7 @@ def main():
         for bucket in sorted(bucket_counts):
             percent = bucket_counts[bucket] / valid * 100
             print(f" {bucket:.2f}-{bucket + 0.01:.2f} : {percent:.2f}%")
-        print("\nAverage piece count:", round(sum(piece_counts) / valid, 2))
+        print("\nAverage piece count:", round(piece_count_total / valid, 2))
 
     print("\nDuplicates:", duplicates)
     print("Broken FEN:", bad_fen)

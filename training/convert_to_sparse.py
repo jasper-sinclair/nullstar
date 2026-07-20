@@ -19,6 +19,7 @@
 
 import struct
 import json
+import math
 import os
 import random
 try:
@@ -59,7 +60,8 @@ PIECE_TO_INDEX = {
 # =========================
 
 
-def load_config(path="config.json"):
+def load_config(path=None):
+    path = path or os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
     if not os.path.exists(path):
         return {}
 
@@ -87,7 +89,8 @@ def parse_epd_line(line):
             fen_part, score_part = line.split("|", 1)
             fen = " ".join(fen_part.strip().split()[:4])
             result = float(score_part.strip())
-            result = max(0.0, min(1.0, result))
+            if not math.isfinite(result) or not 0.0 <= result <= 1.0:
+                return None, None
             return fen, result
         except:
             pass
@@ -257,7 +260,11 @@ def convert(
     valid = 0
     invalid = 0
 
-    total_lines = sum(1 for _ in open(input_path, "r"))
+    total_lines = (
+        sample_limit
+        if sample_limit > 0
+        else sum(1 for _ in open(input_path, "r"))
+    )
 
     with open(input_path, "r") as fin, open(output_path, "wb") as fout:
 
@@ -271,14 +278,20 @@ def convert(
 
             if fen is None:
                 invalid += 1
+                if not skip_invalid:
+                    raise ValueError(f"invalid training record at line {i + 1:,}")
                 continue
 
             try:
                 stm_indices, nstm_indices, result = orient_position(
                     fen, result, label_perspective
                 )
-            except ValueError:
+            except ValueError as error:
                 invalid += 1
+                if not skip_invalid:
+                    raise ValueError(
+                        f"invalid training record at line {i + 1:,}"
+                    ) from error
                 continue
 
             # ---------------------------------

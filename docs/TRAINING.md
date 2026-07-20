@@ -18,6 +18,35 @@ to move's perspective. Keep `label_perspective` set to `side_to_move` for this
 data. For an imported dataset labelled from White's perspective, set it to
 `white`; the converter will invert black-to-move labels.
 
+A combined text corpus must never mix these conventions. Build a canonical
+side-to-move corpus with `build_master_corpus.py`; each source declares its
+own input perspective and the tool validates every record, converts only the
+required black-to-move labels, and writes a SHA-256 manifest. For example:
+
+```powershell
+python build_master_corpus.py `
+  --source .\old_training.txt white `
+  --source .\new_selfplay.txt side_to_move `
+  --output .\training_master_stm.txt `
+  --target-perspective side_to_move
+```
+
+The command refuses to overwrite a source or an existing output. Retain the
+original source files and use the generated manifest as the perspective and
+provenance record. Future native Nullstar self-play may be added as another
+`side_to_move` source when building the next master corpus.
+If an interrupted conversion leaves `OUTPUT.part`, inspect it and use
+`--replace-incomplete` to restart; that option never replaces a completed
+master corpus.
+
+`verify_perspective_conversion.py` can independently compare the source and
+finished master record by record, including every FEN and transformed label.
+
+Set `corpus_manifest` to that manifest in `config.json` and enable
+`require_corpus_manifest` for a master corpus. The pipeline then refuses to
+continue when its path, byte size, or label perspective disagrees with the
+manifest. `verify_corpus_sha256` enables a slower full-file hash check.
+
 The sparse training record is:
 
 ```text
@@ -74,21 +103,52 @@ Edit `config.json`, then run:
 python run_pipeline.py
 ```
 
-The pipeline checks the self-play perspective, shuffles the text data,
-converts it to `training_sparse.bin`, validates the binary structure, and runs
-`train.py`. `verify_training_txt.py` and `verify_sparse_features.py` provide
-additional audits and can be run independently before a long training job.
+On Jasper's development layout, the CPU launchers in `scripts/` activate the
+established environment and run the corresponding configuration:
 
-Important outputs are:
+```text
+train_full_cpu.bat       full corpus, 20 epochs
+train_smoke_1m_cpu.bat   first 1,000,000 records, 1 epoch, no text shuffle
+```
 
-- `best_model.pt`: best floating-point PyTorch state;
-- `checkpoint.pt`: resumable model, optimizer, and scheduler state;
-- `network.bin`: best quantized network for the engine;
-- `network_epoch_*.bin`: optional per-epoch exports;
-- `training.log`: progress and validation losses.
+The smoke profile is `training/configs/smoke-1m.json`. It writes every sparse,
+checkpoint, log, model, and network artifact beneath `training/smoke/`, so it
+cannot resume or overwrite the full experiment. `run_pipeline.py` accepts an
+optional configuration path and passes it consistently to every stage:
 
-The trainer resumes automatically when `checkpoint.pt` exists. Move previous
-checkpoints before intentionally starting a fresh experiment.
+```powershell
+python run_pipeline.py configs\smoke-1m.json
+```
+
+The pipeline validates the text data, shuffles it, converts it to
+`training_sparse.bin`, validates both the binary structure and sparse feature
+orientation, and runs `train.py`. Perspective meaning cannot be inferred from
+FEN and label values alone, so `label_perspective` must agree with the source
+corpus or its generated manifest. `check_selfplay_perspective_features.py` is
+only applicable to unmodified native Nullstar self-play and may be run
+independently.
+
+`verification_scan_limit` and `structure_verify_limit` bound the independent
+sparse-data audits without limiting the dataset used by `train.py`. Set either
+limit to zero for a full scan. Text validation remains streaming and does not
+retain per-position statistics in memory.
+
+The current full STM profile writes:
+
+- `best_model_stm_base.pt`: best floating-point PyTorch state;
+- `checkpoint_stm_base.pt`: resumable model, optimizer, and scheduler state;
+- `checkpoint_mid_epoch_stm_base.pt`: latest configured mid-epoch recovery state;
+- `network_stm_base.bin`: best quantized network for the engine;
+- `network_stm_base_epoch_*.bin`: optional per-epoch exports;
+- `training_stm_base.log`: progress and validation losses.
+
+The trainer resumes automatically when its configured checkpoint exists. Move
+or clean that checkpoint before intentionally starting a fresh experiment.
+
+`clean_here.bat` provides separately confirmed cleanup modes for legacy Set
+006 artifacts, the current full STM training state, the isolated smoke test,
+and the expensive full shuffled/sparse data. It anchors itself to the training
+directory and never uses a broad `*.pt` deletion.
 
 ## 4. Embed the network
 
@@ -107,5 +167,8 @@ source tree; the finished executable needs no external `network.bin`.
 
 `configs/nullstar-002-set006.json` preserves the archived hyperparameters for
 the Set 006 network introduced in Nullstar 002 and retained in Nullstar 003.
+Its explicit `white` label perspective describes the historical normalized
+text corpus; use the active side-to-move configuration with the new canonical
+master instead.
 The active `config.json` includes the corrected, explicit label-perspective
 handling and is the recommended starting point for new experiments.

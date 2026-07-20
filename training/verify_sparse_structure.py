@@ -32,7 +32,8 @@ INPUT_SIZE = 768
 # Config loader
 # =========================
 
-def load_config(path="config.json"):
+def load_config(path=None):
+    path = path or os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
     """Load configuration file if present."""
     if not os.path.exists(path):
         return {}
@@ -53,7 +54,7 @@ def main():
     sparse_path = config.get("training_file", "training_sparse.bin")
 
     # Optional limit (useful for quickly checking large datasets)
-    sample_limit = config.get("dataset_sample_limit", 0)
+    sample_limit = config.get("structure_verify_limit", 1_000_000)
 
     # Progress interval (how often to print progress)
     progress_interval = config.get("verify_progress_interval", 1_000_000)

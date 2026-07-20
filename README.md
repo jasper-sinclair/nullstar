@@ -25,7 +25,7 @@ the original strength baseline for controlled testing.
   network source;
 - `training/`: NNUE data-processing and training programs;
 - `tools/`: development utilities;
-- `scripts/`: release-build launchers;
+- `scripts/`: release-build and local training launchers;
 - `docs/`: building, training, network, provenance, and release documentation;
 - `binaries/`: ignored local output directory for release executables.
 

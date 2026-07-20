@@ -12,7 +12,8 @@ import time
 # Config
 # =========================
 
-def load_config(path="config.json"):
+def load_config(path=None):
+    path = path or os.environ.get("NULLSTAR_TRAINING_CONFIG", "config.json")
     if not os.path.exists(path):
         print("Config not found, using defaults.")
         return {}
