@@ -3,6 +3,12 @@
 Nullstar links its default NNUE directly into the executable as
 `src/net.cpp`. No external network file is required at runtime.
 
+The evaluator is implemented within Nullstar in `src/nnue.cpp` and
+`src/nnue.h`. It does not use or require Daniel Shawul's `nnue-probe`; the
+`nnue-probe` acknowledgment in Kobra's documentation applies to Kobra's
+historical implementation. See [`PROVENANCE.md`](PROVENANCE.md) for the full
+lineage note.
+
 ## Active development network
 
 Nullstar 003 embeds the 768x256 **Set 006** network trained by Jasper Sinclair
