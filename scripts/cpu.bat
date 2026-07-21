@@ -1,5 +1,11 @@
 @echo off
-cd /d C:\DEV\NULLSTAR-TRAIN\TRAINING
+set "NULLSTAR_TRAIN_DIR=C:\DEV\NULLSTAR-TRAINING\TRAIN"
+if not exist "%NULLSTAR_TRAIN_DIR%\nnue_cpu_env\Scripts\python.exe" set "NULLSTAR_TRAIN_DIR=C:\DEV\NULLSTAR-TRAIN\TRAINING"
+cd /d "%NULLSTAR_TRAIN_DIR%"
+if errorlevel 1 (
+  echo ERROR: Training directory not found: %NULLSTAR_TRAIN_DIR%
+  exit /b 1
+)
 set "VIRTUAL_ENV=%CD%\nnue_cpu_env"
 set "NULLSTAR_PYTHON=%VIRTUAL_ENV%\Scripts\python.exe"
 if not exist "%NULLSTAR_PYTHON%" (
