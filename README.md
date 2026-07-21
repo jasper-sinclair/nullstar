@@ -21,6 +21,8 @@ the original strength baseline for controlled testing.
 
 ## Repository layout
 
+- `BUILD_INFO.json`: exact current development-build, NNUE epoch, and hash
+  relationship;
 - `src/`: engine source, Visual Studio project, MinGW Makefile, and embedded
   network source;
 - `training/`: NNUE data-processing and training programs;

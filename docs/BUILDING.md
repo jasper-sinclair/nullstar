@@ -6,7 +6,7 @@ and MinGW profile data remain isolated under `build/`.
 
 ## Visual Studio / MSVC
 
-Build the normal x64 release from Visual Studio by opening
+Build the normal x64 release, if wanted, from Visual Studio by opening
 `src/nullstar.sln`, or from a developer shell:
 
 ```powershell
@@ -15,7 +15,7 @@ msbuild src\nullstar.sln /t:Rebuild /m /p:Configuration=Release /p:Platform=x64
 
 Output: `binaries/nullstar_msvc_nonpgo.exe`.
 
-For the profile-guided release, double-click
+For the distribution profile-guided release, double-click
 `scripts\build_msvc_pgo.bat`, or run:
 
 ```powershell
@@ -27,6 +27,27 @@ benchmark, links the optimized executable, and verifies the benchmark
 signature. Output: `binaries/nullstar_msvc_pgo.exe`.
 
 ## MinGW-w64
+
+### Recommended Windows launcher
+
+The canonical repository can be built directly from `C:\DEV`; it does not
+need to be copied into the MSYS2 home directory. Double-click
+`scripts\build_mingw.bat` to build all four MinGW binaries, or select one
+profile from PowerShell or Command Prompt:
+
+```powershell
+.\scripts\build_mingw.bat pgo-avx2
+```
+
+Accepted modes are `all`, `nonpgo`, `pgo`, `native`, `avx2`, `pgo-native`,
+`pgo-avx2`, and `clean`. The launcher configures the MSYS2 MinGW and Unix-tool
+paths, invokes the existing Makefile in place, and verifies that every output
+reports the UCI identity recorded in `BUILD_INFO.json`.
+
+This makes `C:\DEV\NULLSTAR\nullstar` the single authoritative source and
+writes executables directly to its `binaries\` directory.
+
+### MSYS2 shell
 
 Open an MSYS2 MinGW64 shell and run these commands from the `src` directory.
 To build all four MinGW release binaries with one command:

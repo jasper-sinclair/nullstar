@@ -1,0 +1,26 @@
+{
+    "schema_version":  1,
+    "build":  "021",
+    "uci_name":  "Nullstar 021",
+    "reported_uci_version":  "021",
+    "public_release_base":  "003",
+    "parent_build":  "020",
+    "change_type":  "network",
+    "playing_equivalent_to":  null,
+    "summary":  "Epoch 19 STM network candidate selected after the completed 20-epoch training run.",
+    "prepared_at":  "2026-07-21T19:04:10.9502559+02:00",
+    "network":  {
+                    "id":  "stm-base-epoch-19",
+                    "training_run":  "stm-base",
+                    "source_file":  "network_stm_base_epoch_19.bin",
+                    "epoch":  19,
+                    "validation_loss":  0.414814,
+                    "bytes":  394754,
+                    "sha256":  "1B0BA8AB6BEA8B59ADD0515F4578AA204BC4130582F0057310CE7D09C2FC8C40"
+                },
+    "embedded_net_cpp":  {
+                             "bytes":  2492329,
+                             "sha256":  "896A7546B731FA8E86DDBF5A1AA85BFC34BAA422584FFD6AFE530591F0A3F5A1"
+                         },
+    "test":  null
+}

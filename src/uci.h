@@ -6,7 +6,7 @@
 #include "search.h"
 
 constexpr auto engine_name = "Nullstar";
-constexpr auto engine_version = "003";
+constexpr auto engine_version = "021";
 constexpr auto engine_author = "Jasper Sinclair";
 
 enum class option_type : uint8_t{

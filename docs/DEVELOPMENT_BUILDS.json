@@ -1,0 +1,113 @@
+{
+    "schema_version":  1,
+    "builds":  [
+                   {
+                       "build":  "018",
+                       "uci_name":  "Nullstar 003",
+                       "reported_uci_version":  "003",
+                       "public_release_base":  "003",
+                       "parent_build":  "017",
+                       "change_type":  "network",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Epoch 14 STM network candidate; completed the 10,000-game reference gauntlet.",
+                       "prepared_at":  "2026-07-21",
+                       "network":  {
+                                       "id":  "stm-base-epoch-14",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_14.bin",
+                                       "epoch":  14,
+                                       "validation_loss":  0.417968,
+                                       "bytes":  394754,
+                                       "sha256":  "8890EE63235B6E2539D72FBF15CC495683333FBD9247B7366E9D32585256518A"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2517001,
+                                                "sha256":  "2ECD2E9C663B5A84E8068A05610F05A2F2548A6AE4C00074AB6F0AD3743B82CE"
+                                            },
+                       "test":  {
+                                    "rating":  2980,
+                                    "games":  10000,
+                                    "wins":  6169,
+                                    "draws":  1448,
+                                    "losses":  2383,
+                                    "score_percent":  68.93,
+                                    "report":  "nullstar_mingw_avx2_pgo 018  2980   10000 (+6169,=1448,-2383),  68.9 %.txt"
+                                }
+                   },
+                   {
+                       "build":  "019",
+                       "uci_name":  "Nullstar 003",
+                       "reported_uci_version":  "003",
+                       "public_release_base":  "003",
+                       "parent_build":  "018",
+                       "change_type":  "network",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Epoch 18 STM network candidate.",
+                       "prepared_at":  "2026-07-21T17:48:45+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-18",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_18.bin",
+                                       "epoch":  18,
+                                       "validation_loss":  0.415016,
+                                       "bytes":  394754,
+                                       "sha256":  "267EC56988AB35AEFC373C3A7CEB2D1448075D3E9812EDE4FCA914E1C6456C66"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2517001,
+                                                "sha256":  "A69932CA78E83CBDEE621C63F5A95A391DA1C749087A6229C32045B88740A9C9"
+                                            },
+                       "test":  null
+                   },
+                   {
+                       "build":  "020",
+                       "uci_name":  "Nullstar 003",
+                       "reported_uci_version":  "003",
+                       "public_release_base":  "003",
+                       "parent_build":  "019",
+                       "change_type":  "documentation",
+                       "playing_equivalent_to":  "019",
+                       "summary":  "Document the historical Kobra nnue-probe relationship and Nullstar\u0027s independent current NNUE implementation.",
+                       "prepared_at":  "2026-07-21T18:41:43+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-18",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_18.bin",
+                                       "epoch":  18,
+                                       "validation_loss":  0.415016,
+                                       "bytes":  394754,
+                                       "sha256":  "267EC56988AB35AEFC373C3A7CEB2D1448075D3E9812EDE4FCA914E1C6456C66"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2517001,
+                                                "sha256":  "A69932CA78E83CBDEE621C63F5A95A391DA1C749087A6229C32045B88740A9C9"
+                                            },
+                       "test":  null
+                   },
+                   {
+                       "build":  "021",
+                       "uci_name":  "Nullstar 021",
+                       "reported_uci_version":  "021",
+                       "public_release_base":  "003",
+                       "parent_build":  "020",
+                       "change_type":  "network",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Epoch 19 STM network candidate selected after the completed 20-epoch training run.",
+                       "prepared_at":  "2026-07-21T19:04:10.9502559+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-19",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_19.bin",
+                                       "epoch":  19,
+                                       "validation_loss":  0.414814,
+                                       "bytes":  394754,
+                                       "sha256":  "1B0BA8AB6BEA8B59ADD0515F4578AA204BC4130582F0057310CE7D09C2FC8C40"
+                                   },
+                               "embedded_net_cpp":  {
+                                                        "bytes":  2492329,
+                                                        "sha256":  "896A7546B731FA8E86DDBF5A1AA85BFC34BAA422584FFD6AFE530591F0A3F5A1"
+                                                    },
+                       "test":  null
+                   }
+               ]
+}

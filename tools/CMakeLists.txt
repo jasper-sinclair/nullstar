@@ -5,7 +5,7 @@ project(nullstar_embed_file LANGUAGES CXX)
 add_executable(embed_file embed_file.cpp)
 target_compile_features(embed_file PRIVATE cxx_std_20)
 
-set(EMBED_FILE_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../build/tools")
+set(EMBED_FILE_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/tools")
 set_target_properties(embed_file PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${EMBED_FILE_OUTPUT_DIR}"
 )
