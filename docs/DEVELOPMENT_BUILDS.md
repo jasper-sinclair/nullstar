@@ -9,7 +9,11 @@ BUILD_INFO.json records the currently prepared source tree.
 | 018 | network | stm-base-epoch-14 | 14 | 8890EE63235B... | - | 2980 Elo; 10000 games; 68.93% | Epoch 14 STM network candidate; completed the 10,000-game reference gauntlet. |
 | 019 | network | stm-base-epoch-18 | 18 | 267EC56988AB... | - | - | Epoch 18 STM network candidate. |
 | 020 | documentation | stm-base-epoch-18 | 18 | 267EC56988AB... | 019 | - | Document the historical Kobra nnue-probe relationship and Nullstar's independent current NNUE implementation. |
-| 021 | network | stm-base-epoch-19 | 19 | 1B0BA8AB6BEA... | - | - | Epoch 19 STM network candidate selected after the completed 20-epoch training run. |
+| 021 | network | stm-base-epoch-19 | 19 | 1B0BA8AB6BEA... | - | 2994 Elo; 10000 games; 70.67% | Epoch 19 STM network candidate selected after the completed 20-epoch training run. |
+| 022 | network | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | - | Epoch 29 STM network candidate selected after the completed 30-epoch training run. |
+| 023 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 2995 Elo; 10000 games; 70.25% | Correct quiescence terminal detection when the transposition-table move is the only legal move. |
+| 024 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3052 Elo; 10000 games; 76.06% | Restrict static-exchange recapture selection to attackers of the side to move. |
+| 025 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3048 Elo; 10000 games; 75.64% | Evaluate direct and discovered checks using complete post-move occupancy. |
 
 ## Preparing the next build
 

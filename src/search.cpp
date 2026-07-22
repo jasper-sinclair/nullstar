@@ -411,9 +411,11 @@ template <search_type st> int search::quiescence(
   }
   u16 best_move = hash_hit ? he.data_union.entry_data.move : u16();
   move_sort move_sorter(pos,ss,td.histories,best_move,is_in_check);
+  bool has_legal_move = false;
   for (;;){
     const u16 m = move_sorter.next();
     if (!m) break;
+    has_legal_move = true;
     const bool is_capture = pos.is_capture(m);
     if (const bool is_queen_promotion =
       board::is_promotion(m) && move::get_piece_type(m) == queen; !is_in_check && !(is_capture || is_queen_promotion))
@@ -435,7 +437,7 @@ template <search_type st> int search::quiescence(
       }
     }
   }
-  if (!move_sorter.moves.size()) return is_in_check ? -mate_score + ss->ply : draw_score;
+  if (!has_legal_move) return is_in_check ? -mate_score + ss->ply : draw_score;
   const node_type nt = best_score >= beta
     ? cutnode
     : pv_node && best_move

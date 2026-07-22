@@ -103,11 +103,143 @@
                                        "bytes":  394754,
                                        "sha256":  "1B0BA8AB6BEA8B59ADD0515F4578AA204BC4130582F0057310CE7D09C2FC8C40"
                                    },
-                               "embedded_net_cpp":  {
-                                                        "bytes":  2492329,
-                                                        "sha256":  "896A7546B731FA8E86DDBF5A1AA85BFC34BAA422584FFD6AFE530591F0A3F5A1"
-                                                    },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2492329,
+                                                "sha256":  "896A7546B731FA8E86DDBF5A1AA85BFC34BAA422584FFD6AFE530591F0A3F5A1"
+                                            },
+                       "test":  {
+                                    "rating":  2994,
+                                    "games":  10000,
+                                    "wins":  6397,
+                                    "draws":  1340,
+                                    "losses":  2263,
+                                    "score_percent":  70.67,
+                                    "report":  "nullstar_mingw_avx2_pgo 021  2994   10000 (+6397,=1340,-2263),  70.7 %.txt"
+                                }
+                   },
+                   {
+                       "build":  "022",
+                       "uci_name":  "Nullstar 022",
+                       "reported_uci_version":  "022",
+                       "public_release_base":  "003",
+                       "parent_build":  "021",
+                       "change_type":  "network",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Epoch 29 STM network candidate selected after the completed 30-epoch training run.",
+                       "prepared_at":  "2026-07-22T11:36:32.4971290+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-29",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_29.bin",
+                                       "epoch":  29,
+                                       "validation_loss":  0.41394,
+                                       "bytes":  394754,
+                                       "sha256":  "9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2492329,
+                                                "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
+                                            },
                        "test":  null
+                   },
+                   {
+                       "build":  "023",
+                       "uci_name":  "Nullstar 023",
+                       "reported_uci_version":  "023",
+                       "public_release_base":  "003",
+                       "parent_build":  "022",
+                       "change_type":  "source",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Correct quiescence terminal detection when the transposition-table move is the only legal move.",
+                       "prepared_at":  "2026-07-22T13:55:41.1972613+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-29",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_29.bin",
+                                       "epoch":  29,
+                                       "validation_loss":  0.41394,
+                                       "bytes":  394754,
+                                       "sha256":  "9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2492329,
+                                                "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
+                                            },
+                       "test":  {
+                                    "rating":  2995,
+                                    "games":  10000,
+                                    "wins":  6347,
+                                    "draws":  1355,
+                                    "losses":  2298,
+                                    "score_percent":  70.25,
+                                    "report":  "nullstar_mingw_avx2_pgo 023  2995   10000 (+6347,=1355,-2298),  70.25 %.txt"
+                                }
+                   },
+                   {
+                       "build":  "024",
+                       "uci_name":  "Nullstar 024",
+                       "reported_uci_version":  "024",
+                       "public_release_base":  "003",
+                       "parent_build":  "023",
+                       "change_type":  "source",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Restrict static-exchange recapture selection to attackers of the side to move.",
+                       "prepared_at":  "2026-07-22T14:45:29.5603197+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-29",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_29.bin",
+                                       "epoch":  29,
+                                       "validation_loss":  0.41394,
+                                       "bytes":  394754,
+                                       "sha256":  "9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2492329,
+                                                "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
+                                            },
+                       "test":  {
+                                    "rating":  3052,
+                                    "games":  10000,
+                                    "wins":  6971,
+                                    "draws":  1271,
+                                    "losses":  1758,
+                                    "score_percent":  76.06,
+                                    "report":  "nullstar_mingw_avx2_pgo 024  3052   10000 (+6971,=1271,-1758),  76.1 %.txt"
+                                }
+                   },
+                   {
+                       "build":  "025",
+                       "uci_name":  "Nullstar 025",
+                       "reported_uci_version":  "025",
+                       "public_release_base":  "003",
+                       "parent_build":  "024",
+                       "change_type":  "source",
+                       "playing_equivalent_to":  null,
+                       "summary":  "Evaluate direct and discovered checks using complete post-move occupancy.",
+                       "prepared_at":  "2026-07-22T19:11:03.5175638+02:00",
+                       "network":  {
+                                       "id":  "stm-base-epoch-29",
+                                       "training_run":  "stm-base",
+                                       "source_file":  "network_stm_base_epoch_29.bin",
+                                       "epoch":  29,
+                                       "validation_loss":  0.41394,
+                                       "bytes":  394754,
+                                       "sha256":  "9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD"
+                                   },
+                       "embedded_net_cpp":  {
+                                                "bytes":  2492329,
+                                                "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
+                                            },
+                       "test":  {
+                                    "rating":  3048,
+                                    "games":  10000,
+                                    "wins":  6898,
+                                    "draws":  1333,
+                                    "losses":  1769,
+                                    "score_percent":  75.64,
+                                    "report":  "nullstar_mingw_avx2_pgo 025  3048   10000 (+6898,=1333,-1769),  75.6 %.txt"
+                                }
                    }
                ]
 }

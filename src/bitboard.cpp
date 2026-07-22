@@ -389,22 +389,38 @@ void board::undo_null_move(){
 
 bool board::gives_check(
   const u16 m) const{
-  const bitboard their_king_bb = get_pieces(!side_to_move,king);
-  const u8 ksq = lsb(their_king_bb);
+  const bool us = side_to_move;
+  const bool them = !us;
+  const u8 their_king = ksq(them);
   const u8 from = move::from(m);
   const u8 to = move::to(m);
   const move::move_type mt = move::mt(m);
   i32 pt = ptmake(piece_on(from));
   bitboard occ = occupied_bb;
+
+  occ.clear(from);
   if (mt == move::promotion){
-    occ.clear(from);
     pt = move::get_piece_type(m);
+  } else if (mt == move::en_passant){
+    occ.clear(SCU8(to - pawn_push(us)));
   }
+
+  u8 rook_from = no_sq;
+  u8 rook_to = no_sq;
+  if (mt == move::castle){
+    const bool king_side = to > from;
+    rook_from = relative(us,king_side ? h1 : a1);
+    rook_to = relative(us,king_side ? f1 : d1);
+    occ.clear(rook_from);
+    occ.set(rook_to);
+  }
+  occ.set(to);
+
   bitboard attacked;
   switch (pt){
   case pawn:
     {
-      attacked = attack::pawn_att[side_to_move][to];
+      attacked = attack::pawn_att[us][to];
       break;
     }
   case knight:
@@ -427,30 +443,29 @@ bool board::gives_check(
       attacked = attack::atts<queen>(to,occ);
       break;
     }
-  default: attacked = {};
+  case king:
+    {
+      attacked = attack::king_att[to];
+      break;
+    }
+  default:
+    attacked = {};
   }
-  if (attacked & their_king_bb) return true;
-  if (mt == move::castle){
-    occ.clear(from);
-    if (const u8 rsq = side_to_move == white
-      ? to > from
-      ? f1
-      : d1
-      : to > from
-      ? f8
-      : d8; attack::atts<rook>(rsq,occ) & their_king_bb)
-      return true;
-  } else if (mt == move::en_passant){
-    occ.clear(from);
-    occ.clear(SCU8(to - pawn_push(side_to_move)));
-    occ.set(to);
-    if (is_under_attack(!side_to_move,ksq)) return true;
-  } else{
-    occ.clear(from);
-    occ.set(to);
-    if (is_under_attack(!side_to_move,ksq)) return true;
-  }
-  return false;
+  if (attacked.is_set(their_king)) return true;
+  if (mt == move::castle &&
+    attack::atts<rook>(rook_to,occ).is_set(their_king))
+    return true;
+
+  bitboard diagonal_sliders =
+    get_pieces(us,bishop) | get_pieces(us,queen);
+  bitboard orthogonal_sliders =
+    get_pieces(us,rook) | get_pieces(us,queen);
+  diagonal_sliders.clear(from);
+  orthogonal_sliders.clear(from);
+  if (mt == move::castle) orthogonal_sliders.clear(rook_from);
+
+  return SCB(attack::atts<bishop>(their_king,occ) & diagonal_sliders) ||
+    SCB(attack::atts<rook>(their_king,occ) & orthogonal_sliders);
 }
 
 bool board::is_pseudo_legal(
@@ -690,7 +705,7 @@ bitboard board::least_valuable_piece(
   const bool attacker,
   i32& pc) const{
   for (i32 pt = pawn; pt <= king; ++pt){
-    if (const bitboard subset = attacking & get_pieces(pt)){
+    if (const bitboard subset = attacking & get_pieces(attacker,pt)){
       pc = pmake(attacker,pt);
       return bitboard::from_sq(lsb(subset));
     }
