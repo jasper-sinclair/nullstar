@@ -184,14 +184,14 @@ template <search_type st, bool skip_hash_move> int search::alpha_beta(
     if (alpha >= beta) return alpha;
   }
   const u64 key = pos.key();
-  hash_entry he;
+  hash_data he;
   const bool hash_hit = hash.probe(key,he);
   const int hash_score =
-    hash_table::score_from_hash(he.data_union.entry_data.score,ss->ply);
-  if (!pv_node && !skip_hash_move && hash_hit && depth <= he.data_union.entry_data.depth){
-    if (he.data_union.entry_data.nt == pvnode ||
-      (he.data_union.entry_data.nt == cutnode && hash_score >= beta) ||
-      (he.data_union.entry_data.nt == allnode && hash_score <= alpha)){
+    hash_table::score_from_hash(he.score,ss->ply);
+  if (!pv_node && !skip_hash_move && hash_hit && depth <= he.depth){
+    if (he.nt == pvnode ||
+      (he.nt == cutnode && hash_score >= beta) ||
+      (he.nt == allnode && hash_score <= alpha)){
       if (pos.st->fifty_move_count < 90) return hash_score;
     }
   }
@@ -199,11 +199,11 @@ template <search_type st, bool skip_hash_move> int search::alpha_beta(
   int eval;
   if (is_in_check) eval = ss->static_eval = -infinite_score;
   else if (hash_hit){
-    ss->static_eval = he.data_union.entry_data.eval;
-    if (depth <= he.data_union.entry_data.depth &&
-      (he.data_union.entry_data.nt == pvnode ||
-        (he.data_union.entry_data.nt == cutnode && hash_score > ss->static_eval) ||
-        (he.data_union.entry_data.nt == allnode && hash_score < ss->static_eval))){
+    ss->static_eval = he.eval;
+    if (depth <= he.depth &&
+      (he.nt == pvnode ||
+        (he.nt == cutnode && hash_score > ss->static_eval) ||
+        (he.nt == allnode && hash_score < ss->static_eval))){
       eval = hash_score;
     } else eval = ss->static_eval;
   } else eval = ss->static_eval = nnue::evaluate(pos);
@@ -231,7 +231,7 @@ template <search_type st, bool skip_hash_move> int search::alpha_beta(
     if (pv_node && !hash_hit) --depth;
     if (depth <= 0) return quiescence<pv_node ? node_pv : non_pv>(pos,alpha,beta,td,ss);
   }
-  const u16 hash_move = hash_hit ? he.data_union.entry_data.move : u16();
+  const u16 hash_move = hash_hit ? he.move : u16();
   move_sort move_sorter(pos,ss,td.histories,hash_move,is_in_check);
   int best_score = -infinite_score;
   int score = 0;
@@ -275,8 +275,8 @@ template <search_type st, bool skip_hash_move> int search::alpha_beta(
     bool lmr = false;
     if (move_count == 1){
       if (!root_node && !skip_hash_move && depth >= 8 && m == hash_move &&
-        (he.data_union.entry_data.nt == cutnode || he.data_union.entry_data.nt == pvnode) &&
-        he.data_union.entry_data.depth + 3 >= depth && std::abs(eval) < min_mate_score){
+        (he.nt == cutnode || he.nt == pvnode) &&
+        he.depth + 3 >= depth && std::abs(eval) < min_mate_score){
         const int singular_beta =
           std::min(eval - 2 * depth,beta);
         const i32 singular_depth = depth / 2;
@@ -383,20 +383,20 @@ template <search_type st> int search::quiescence(
   if (pos.is_draw()) return draw_score;
   if (ss->ply >= max_ply) return pos.is_in_check() ? draw_score : nnue::evaluate(pos);
   const u64 key = pos.key();
-  hash_entry he;
+  hash_data he;
   const bool hash_hit = hash.probe(key,he);
-  const int hash_score = hash_table::score_from_hash(he.data_union.entry_data.score,ss->ply);
+  const int hash_score = hash_table::score_from_hash(he.score,ss->ply);
   if (!pv_node && hash_hit &&
-    (he.data_union.entry_data.nt == pvnode || (he.data_union.entry_data.nt == cutnode && hash_score >= beta) ||
-      (he.data_union.entry_data.nt == allnode && hash_score <= alpha)))
+    (he.nt == pvnode || (he.nt == cutnode && hash_score >= beta) ||
+      (he.nt == allnode && hash_score <= alpha)))
     return hash_score;
   const bool is_in_check = pos.is_in_check();
   int best_score;
   if (is_in_check) best_score = ss->static_eval = -infinite_score;
-  else best_score = ss->static_eval = hash_hit ? he.data_union.entry_data.eval : nnue::evaluate(pos);
-  if (hash_hit && (he.data_union.entry_data.nt == pvnode ||
-    (he.data_union.entry_data.nt == cutnode && hash_score > best_score) ||
-    (he.data_union.entry_data.nt == allnode && hash_score < best_score)))
+  else best_score = ss->static_eval = hash_hit ? he.eval : nnue::evaluate(pos);
+  if (hash_hit && (he.nt == pvnode ||
+    (he.nt == cutnode && hash_score > best_score) ||
+    (he.nt == allnode && hash_score < best_score)))
     best_score = hash_score;
   if (!is_in_check){
     if (best_score >= beta){
@@ -409,7 +409,7 @@ template <search_type st> int search::quiescence(
     }
     if (pv_node && best_score > alpha) alpha = best_score;
   }
-  u16 best_move = hash_hit ? he.data_union.entry_data.move : u16();
+  u16 best_move = hash_hit ? he.move : u16();
   move_sort move_sorter(pos,ss,td.histories,best_move,is_in_check);
   bool has_legal_move = false;
   for (;;){
