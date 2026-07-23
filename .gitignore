@@ -51,6 +51,8 @@ __pycache__/
 *.log
 training/*.manifest.json
 network*.bin
+!nets/
+!nets/*.bin
 *_env/
 .venv/
 venv/
