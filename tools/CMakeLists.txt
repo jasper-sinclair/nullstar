@@ -1,28 +1,43 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(nullstar_embed_file LANGUAGES CXX)
+project(nullstar_tools LANGUAGES CXX)
+
+include(CTest)
+find_package(Threads REQUIRED)
 
 add_executable(embed_file embed_file.cpp)
 target_compile_features(embed_file PRIVATE cxx_std_20)
 
-set(EMBED_FILE_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/tools")
-set_target_properties(embed_file PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${EMBED_FILE_OUTPUT_DIR}"
+add_executable(
+  hash_table_probe
+  hash_table_probe.cpp
+  ../src/hash.cpp
 )
+target_compile_features(hash_table_probe PRIVATE cxx_std_23)
+target_link_libraries(hash_table_probe PRIVATE Threads::Threads)
 
-foreach(CONFIG Debug Release RelWithDebInfo MinSizeRel)
-  string(TOUPPER "${CONFIG}" CONFIG_UPPER)
-  set_target_properties(embed_file PROPERTIES
-    "RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER}" "${EMBED_FILE_OUTPUT_DIR}"
+set(NULLSTAR_TOOL_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/tools")
+foreach(TARGET embed_file hash_table_probe)
+  set_target_properties(${TARGET} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${NULLSTAR_TOOL_OUTPUT_DIR}"
   )
+
+  foreach(CONFIG Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER "${CONFIG}" CONFIG_UPPER)
+    set_target_properties(${TARGET} PROPERTIES
+      "RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER}" "${NULLSTAR_TOOL_OUTPUT_DIR}"
+    )
+  endforeach()
+
+  if(MSVC)
+    target_compile_options(${TARGET} PRIVATE /W4 /permissive-)
+  else()
+    target_compile_options(${TARGET} PRIVATE -Wall -Wextra -Wpedantic)
+  endif()
+
+  if(MINGW)
+    target_link_options(${TARGET} PRIVATE -static)
+  endif()
 endforeach()
 
-if(MSVC)
-  target_compile_options(embed_file PRIVATE /W4 /permissive-)
-else()
-  target_compile_options(embed_file PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-if(MINGW)
-  target_link_options(embed_file PRIVATE -static)
-endif()
+add_test(NAME hash_table_probe COMMAND hash_table_probe)

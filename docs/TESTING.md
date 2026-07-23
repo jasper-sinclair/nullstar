@@ -96,6 +96,17 @@ The final saved report and Ordo result take precedence over this approximation.
 Interim results should be treated cautiously even when the schedule is evenly
 allocated.
 
+For comparable ratings, Ordo must use the fixed arithmetic mean of the 16
+recorded opponent anchors:
+
+```powershell
+ordo-win64.exe -a 3020.125 -W -p result.pgn -F97 -s100 `
+  -j details.txt -o ordo.txt -c ordo_csv.txt
+```
+
+Changing the reference rating shifts every reported rating and makes results
+from separate runs appear stronger or weaker without changing any game.
+
 ## Build 026 tests
 
 The legacy comparison-pool gauntlet completed on 23 July 2026:
@@ -107,7 +118,50 @@ Record:       +6987 =1271 -1742
 Score:        76.22%
 ```
 
-The stronger-pool test uses the 3020.125 pool and the 10,240-game schedule
-documented above. It began on 23 July 2026 and is currently in progress. Its
-result will be added only after all scheduled games and the final report are
-complete.
+The stronger-pool test also completed on 23 July 2026:
+
+```text
+Nullstar 026: 3022 Elo
+Pool mean:    3020.125
+Games:        10240
+Record:       +4101 =1936 -4203
+Score:        49.50%
+```
+
+The result used the color-balanced randomized schedule documented above. The
+final Ordo rating is consistent with the pool mean and replaces interim
+performance estimates.
+
+## Build 027 strong-pool test
+
+The build 027 test completed on 23 July 2026:
+
+```text
+Nullstar 027: 3081 Elo (Ordo error 5.9)
+Pool mean:    3020.125
+Games:        10240
+Record:       +4682 =2326 -3232
+Score:        57.08%
+```
+
+Every opponent received exactly 640 games. The PGN contained 10,240 complete
+games, no truncated games, and no illegal-move dump files. Relative to build
+026 in the same pool, build 027 gained 59 Ordo Elo and 7.58 score percentage
+points. The candidate executable SHA-256 was
+`B7D46D4BD30C560EF12136E78DAD1521F921966DE84A0723890A4186C234E4E9`.
+
+## Automated regression checks
+
+The engine's built-in `perft` and deterministic `bench` commands provide move
+generation and search signatures. `scripts/verify_build.ps1` applies those
+checks to every locally built executable and requires one cross-profile
+benchmark signature. The tools CMake project also builds and registers
+`hash_table_probe`, which checks packed-entry round trips,
+replacement behavior, mate-distance conversion, and concurrent payload
+coherence:
+
+```powershell
+cmake -S .\tools -B .\build\tools-tests
+cmake --build .\build\tools-tests --config Release
+ctest --test-dir .\build\tools-tests -C Release --output-on-failure
+```

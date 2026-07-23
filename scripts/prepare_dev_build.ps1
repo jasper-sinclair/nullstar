@@ -117,11 +117,16 @@ function Get-HistoryMarkdown {
     } else {
       [string]$entry.playing_equivalent_to
     }
-    $test = if ($null -ne $entry.test) {
-      "$($entry.test.rating) Elo; $($entry.test.games) games; $($entry.test.score_percent)%"
-    } else {
-      "-"
+    $tests = New-Object System.Collections.Generic.List[string]
+    if ($null -ne $entry.test) {
+      $tests.Add("$($entry.test.rating) Elo; $($entry.test.games) games; $($entry.test.score_percent)%")
     }
+    $strongPoolProperty = $entry.PSObject.Properties["strong_pool_test"]
+    if ($null -ne $strongPoolProperty -and $null -ne $strongPoolProperty.Value) {
+      $strongPoolTest = $strongPoolProperty.Value
+      $tests.Add("strong pool: $($strongPoolTest.rating) Elo; $($strongPoolTest.games) games; $($strongPoolTest.score_percent)%")
+    }
+    $test = if ($tests.Count) { [string]::Join("; ", $tests) } else { "-" }
     $summaryText = ([string]$entry.summary).Replace("|", "\|")
     $lines.Add("| $($entry.build) | $($entry.change_type) | $($entry.network.id) | $epoch | $shortHash | $equivalent | $test | $summaryText |")
   }

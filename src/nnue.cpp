@@ -90,22 +90,23 @@ namespace nnue{
 
       for (int i = 0; i < l1_size; ++i){
         int x = acc[stm][i];
-        x = std::clamp(x,0,255);
+        x = std::clamp(x,0,quantization_scale);
         score += static_cast<int64_t>(x) * x * net->out_weights[0][i];
       }
 
       for (int i = 0; i < l1_size; ++i){
         int x = acc[nstm][i];
-        x = std::clamp(x,0,255);
+        x = std::clamp(x,0,quantization_scale);
         score += static_cast<int64_t>(x) * x * net->out_weights[1][i];
       }
 
-      int64_t tmp = score / 255;
-      tmp += net->out_bias;
-      tmp = tmp * 400LL;
-      score = tmp / (255LL * 64LL);
+      constexpr int64_t activation_scale =
+        static_cast<int64_t>(quantization_scale) * quantization_scale;
+      constexpr int64_t network_scale =
+        activation_scale * quantization_scale;
 
-      return static_cast<int>(score);
+      score += static_cast<int64_t>(net->out_bias) * activation_scale;
+      return static_cast<int>(score * centipawn_scale / network_scale);
     }
   }
 

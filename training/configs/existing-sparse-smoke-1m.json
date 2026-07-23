@@ -31,6 +31,11 @@
   "grad_clip": 1.0,
   "feature_dropout": 0.0,
 
+  "verification_epd": "..\\DATA\\MASTER\\training_stm.txt",
+  "verify_export_parity": true,
+  "export_parity_samples": 128,
+  "export_parity_max_logit_error": 0.25,
+
   "log_every": 500,
   "mid_checkpoint_every": 0
 }

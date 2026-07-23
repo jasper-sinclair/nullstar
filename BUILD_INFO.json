@@ -1,14 +1,14 @@
 {
     "schema_version":  1,
-    "build":  "026",
-    "uci_name":  "Nullstar 026",
-    "reported_uci_version":  "026",
+    "build":  "027",
+    "uci_name":  "Nullstar 027",
+    "reported_uci_version":  "027",
     "public_release_base":  "003",
-    "parent_build":  "025",
+    "parent_build":  "026",
     "change_type":  "source",
     "playing_equivalent_to":  null,
-    "summary":  "Pack transposition-table entries into fully guarded 16-byte atomic slots.",
-    "prepared_at":  "2026-07-22T22:19:28.8210806+02:00",
+    "summary":  "Align quantized NNUE inference with the trainer and add export-parity regression checks.",
+    "prepared_at":  "2026-07-23T13:49:52.2737262+02:00",
     "network":  {
                     "id":  "stm-base-epoch-29",
                     "training_run":  "stm-base",
@@ -22,13 +22,15 @@
                              "bytes":  2492329,
                              "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
                          },
-    "test":  {
-                 "rating":  3056,
-                 "games":  10000,
-                 "wins":  6987,
-                 "draws":  1271,
-                 "losses":  1742,
-                 "score_percent":  76.22,
-                 "report":  "nullstar_mingw_avx2_pgo 026  3056   10000 (+6987,=1271,-1742),  76.2 %.txt"
-             }
+    "test":  null,
+    "strong_pool_test":  {
+                             "rating":  3081,
+                             "games":  10240,
+                             "wins":  4682,
+                             "draws":  2326,
+                             "losses":  3232,
+                             "score_percent":  57.08,
+                             "pool_mean":  3020.125,
+                             "report":  "nullstar_mingw_avx2_pgo 027  3081   10240 (+4682,=2326,-3232),  57.1 %.txt"
+                         }
 }

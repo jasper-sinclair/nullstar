@@ -64,6 +64,8 @@ def build_pipeline(config, start_at=None):
         ["verify_sparse_features.py"],
         ["train.py"],
     ])
+    if config.get("verify_export_parity", True):
+        pipeline.append(["verify_export_parity.py"])
     if start_at:
         for index, command in enumerate(pipeline):
             if command[0] == start_at:
@@ -142,6 +144,7 @@ def main():
             "verify_sparse_structure.py",
             "verify_sparse_features.py",
             "train.py",
+            "verify_export_parity.py",
         ),
     )
     arguments = parser.parse_args()

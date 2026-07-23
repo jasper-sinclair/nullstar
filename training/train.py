@@ -694,22 +694,47 @@ def main():
     )
     export_path = config.get("export_path", "network.bin")
 
-    resume_path = None
-    if os.path.exists(checkpoint_path):
-        resume_path = checkpoint_path
-    elif os.path.exists(mid_checkpoint_path):
-        resume_path = mid_checkpoint_path
+    resume_candidates = []
+    for candidate_path, is_mid_epoch in (
+        (checkpoint_path, False),
+        (mid_checkpoint_path, True),
+    ):
+        if not os.path.exists(candidate_path):
+            continue
 
-    if resume_path:
+        candidate = torch.load(candidate_path, map_location=device)
+        candidate_epoch = int(candidate["epoch"])
+        candidate_batch = (
+            int(candidate.get("batches_completed", 0))
+            if is_mid_epoch
+            else 0
+        )
+        resume_candidates.append((
+            candidate_epoch,
+            candidate_batch,
+            os.path.getmtime(candidate_path),
+            candidate_path,
+            is_mid_epoch,
+            candidate,
+        ))
+
+    if resume_candidates:
+        (
+            _,
+            _,
+            _,
+            resume_path,
+            resume_is_mid_epoch,
+            checkpoint,
+        ) = max(resume_candidates, key=lambda item: item[:3])
         logger.info("Resuming from checkpoint: %s", resume_path)
-        checkpoint = torch.load(resume_path, map_location=device)
         model.load_state_dict(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         if "scheduler" in checkpoint:
             scheduler.load_state_dict(checkpoint["scheduler"])
         start_epoch = int(checkpoint["epoch"])
         best_val_loss = float(checkpoint["best_val_loss"])
-        if resume_path == mid_checkpoint_path:
+        if resume_is_mid_epoch:
             resume_batch = int(checkpoint.get(
                 "batches_completed",
                 config.get("resume_mid_epoch_batch", 0),

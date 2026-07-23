@@ -11,6 +11,24 @@ lineage note.
 
 ## Active development network
 
+The current development line embeds the 768x256 `stm-base` epoch 29 network.
+It was selected from the completed 30-epoch side-to-move training run at a
+validation loss of `0.413940`.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Quantized `network_stm_base_epoch_29.bin` | 394,754 | `9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD` |
+| Generated `src/net.cpp` | 2,492,329 | `E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C` |
+
+The trainer and engine use a quantization scale of 128. First-layer
+accumulators are clipped to `0..128`, matching the trainer's `0..1`
+clipped-square activation, and the final logit is converted at 400
+centipawns per logit. `training/verify_export_parity.py` checks every exported
+parameter and compares floating-point and quantized inference on corpus
+positions.
+
+## Public release network
+
 Nullstar 003 embeds the 768x256 **Set 006** network trained by Jasper Sinclair
 in the Kobra/Cobra training line. The archived development set is retained
 locally as `TRAINING 227 768-256 SET 006`; its multi-gigabyte source datasets

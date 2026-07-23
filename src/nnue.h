@@ -5,6 +5,8 @@ struct board;
 namespace nnue{
   constexpr int input_size = 768;
   constexpr int l1_size = 256;
+  constexpr int quantization_scale = 128;
+  constexpr int centipawn_scale = 400;
   bool init();
   void refresh_accumulator(
     const board& pos,

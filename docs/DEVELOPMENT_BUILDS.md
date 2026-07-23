@@ -14,7 +14,8 @@ BUILD_INFO.json records the currently prepared source tree.
 | 023 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 2995 Elo; 10000 games; 70.25% | Correct quiescence terminal detection when the transposition-table move is the only legal move. |
 | 024 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3052 Elo; 10000 games; 76.06% | Restrict static-exchange recapture selection to attackers of the side to move. |
 | 025 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3048 Elo; 10000 games; 75.64% | Evaluate direct and discovered checks using complete post-move occupancy. |
-| 026 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3056 Elo; 10000 games; 76.22% | Pack transposition-table entries into fully guarded 16-byte atomic slots. |
+| 026 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | 3056 Elo; 10000 games; 76.22%; strong pool: 3022 Elo; 10240 games; 49.5% | Pack transposition-table entries into fully guarded 16-byte atomic slots. |
+| 027 | source | stm-base-epoch-29 | 29 | 9711CF740BA0... | - | strong pool: 3081 Elo; 10240 games; 57.08% | Align quantized NNUE inference with the trainer and add export-parity regression checks. |
 
 ## Preparing the next build
 

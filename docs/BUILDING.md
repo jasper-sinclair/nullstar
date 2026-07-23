@@ -92,3 +92,15 @@ build systems. A separate `network.bin` is not needed to build or run Nullstar.
 To replace the network, follow [`TRAINING.md`](TRAINING.md) and use the source
 utility documented in [`EMBEDDING.md`](EMBEDDING.md); then rebuild every
 release target.
+
+## Verifying local binaries
+
+After building, run the cross-profile regression script:
+
+```powershell
+.\scripts\verify_build.ps1
+```
+
+It checks every executable in `binaries/` for the UCI identity in
+`BUILD_INFO.json`, readiness, the canonical start-position perft result, and
+an identical deterministic benchmark signature across compilers and profiles.

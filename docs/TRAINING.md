@@ -57,6 +57,12 @@ uint16  opponent feature indices[]
 float32 result
 ```
 
+The quantized network uses scale 128 for both layers. The engine clamps each
+first-layer accumulator to `0..128`, squares it, applies the quantized output
+weights, restores the output bias at the squared-activation scale, and maps
+the resulting logit at 400 centipawns per logit. This is the integer
+equivalent of the trainer's clipped-square forward pass.
+
 ## 1. Create the Python environment
 
 From the repository root, enter the training directory and create the
@@ -126,9 +132,12 @@ python run_pipeline.py configs\smoke-1m.json
 
 The pipeline validates the text data, shuffles it, converts it to
 `training_sparse.bin`, validates both the binary structure and sparse feature
-orientation, and runs `train.py`. A shuffled corpus is fully validated again
-before conversion. Shuffled and sparse outputs are written to `.part` files
-and replace their final paths only after successful completion. Perspective
+orientation, runs `train.py`, and then runs `verify_export_parity.py`. The
+final verifier reconstructs the quantized binary, checks every parameter
+against the selected PyTorch model, and compares float and integer inference
+on real corpus positions. A shuffled corpus is fully validated again before
+conversion. Shuffled and sparse outputs are written to `.part` files and
+replace their final paths only after successful completion. Perspective
 meaning cannot be inferred from FEN and label values alone, so
 `label_perspective` must agree with the source corpus or its generated
 manifest. `check_selfplay_perspective_features.py` is only applicable to

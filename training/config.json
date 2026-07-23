@@ -56,6 +56,9 @@
 
   "verification_epd": "training_shuffled_stm.txt",
   "verification_samples": 10,
+  "verify_export_parity": true,
+  "export_parity_samples": 128,
+  "export_parity_max_logit_error": 0.25,
   "verification_scan_limit": 100000,
   "structure_verify_limit": 1000000,
   "verify_progress_interval": 1000000,
