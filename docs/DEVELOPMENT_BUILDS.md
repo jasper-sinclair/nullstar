@@ -23,9 +23,10 @@ From the repository root, run:
 
 ```powershell
 .\scripts\prepare_dev_build.ps1 `
-  -NetworkFile "C:\path\to\network_stm_base_epoch_20.bin" `
-  -Summary "Epoch 20 STM candidate" `
-  -ValidationLoss 0.415064
+  -NetworkFile "C:\path\to\network_candidate.bin" `
+  -NetworkId "stm-next-candidate" `
+  -Summary "Next STM network candidate" `
+  -ValidationLoss 0.400000
 ```
 
 The script chooses the next consecutive build number, validates and embeds

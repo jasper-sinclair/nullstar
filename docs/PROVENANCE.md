@@ -46,6 +46,12 @@ representation. Its quantized binary has SHA-256:
 
 `30A74951A897E696A5156BC9E192771DB99FE5754A6431D7EA2D562003224CE6`
 
+Nullstar 027 introduces Jasper Sinclair's 768x256 `stm-base` epoch 29 network,
+trained with the repository's explicit side-to-move pipeline. Its quantized
+binary has SHA-256:
+
+`9711CF740BA0C564B62FB41C93CDD0DD9E41FD2960DDC54E8D627C5339A55FCD`
+
 See [`NETWORK.md`](NETWORK.md) for artifact hashes, archived configuration
 details, and the reproduction boundary for the original multi-gigabyte
 training dataset.

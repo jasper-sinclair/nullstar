@@ -132,9 +132,9 @@ The result used the color-balanced randomized schedule documented above. The
 final Ordo rating is consistent with the pool mean and replaces interim
 performance estimates.
 
-## Build 027 strong-pool test
+## Nullstar 027 release test
 
-The build 027 test completed on 23 July 2026:
+The Nullstar 027 release test completed on 23 July 2026:
 
 ```text
 Nullstar 027: 3081 Elo (Ordo error 5.9)
@@ -146,8 +146,8 @@ Score:        57.08%
 
 Every opponent received exactly 640 games. The PGN contained 10,240 complete
 games, no truncated games, and no illegal-move dump files. Relative to build
-026 in the same pool, build 027 gained 59 Ordo Elo and 7.58 score percentage
-points. The candidate executable SHA-256 was
+026 in the same pool, Nullstar 027 gained 59 Ordo Elo and 7.58 score percentage
+points. The tested release executable SHA-256 was
 `B7D46D4BD30C560EF12136E78DAD1521F921966DE84A0723890A4186C234E4E9`.
 
 ## Automated regression checks

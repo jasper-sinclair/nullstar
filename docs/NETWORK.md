@@ -9,11 +9,11 @@ The evaluator is implemented within Nullstar in `src/nnue.cpp` and
 historical implementation. See [`PROVENANCE.md`](PROVENANCE.md) for the full
 lineage note.
 
-## Active development network
+## Nullstar 027 release network
 
-The current development line embeds the 768x256 `stm-base` epoch 29 network.
-It was selected from the completed 30-epoch side-to-move training run at a
-validation loss of `0.413940`.
+Nullstar 027 embeds the 768x256 `stm-base` epoch 29 network. It was selected
+from the completed 30-epoch side-to-move training run at a validation loss of
+`0.413940`.
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
@@ -27,16 +27,17 @@ centipawns per logit. `training/verify_export_parity.py` checks every exported
 parameter and compares floating-point and quantized inference on corpus
 positions.
 
-## Public release network
+## Historical Nullstar 003 release network
 
 Nullstar 003 embeds the 768x256 **Set 006** network trained by Jasper Sinclair
 in the Kobra/Cobra training line. The archived development set is retained
 locally as `TRAINING 227 768-256 SET 006`; its multi-gigabyte source datasets
 and generated checkpoints are not suitable for the source repository.
 
-The testing archive of Nullstar 002 and the current Nullstar 003 source contain
-identical 394,754-byte quantized network data. Nullstar 003 regenerates the C++
-representation with the repository's cleaned, reproducible embedding tool.
+The testing archive of Nullstar 002 and the archived Nullstar 003 source
+contain identical 394,754-byte quantized network data. Nullstar 003
+regenerates the C++ representation with the repository's cleaned,
+reproducible embedding tool.
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
@@ -55,11 +56,15 @@ The full source workflow is documented in [`TRAINING.md`](TRAINING.md):
 
 1. generate `training.txt` with Nullstar self-play;
 2. validate, shuffle, and convert it to the sparse format;
-3. train and export `network.bin`;
+3. train and export a quantized network such as `network_stm_base.bin`;
 4. use `tools/embed_file` to regenerate `src/net.cpp`;
 5. rebuild and benchmark the engine;
-6. establish strength with controlled paired match testing.
+6. establish strength with controlled match testing.
 
-Exact retraining of Set 006 requires its original 38 GB archived dataset.
-That archive remains development material rather than a Git dependency; the
-quantized model itself is completely preserved by tracked `src/net.cpp`.
+Exact retraining of the current `stm-base` network requires the local master
+corpus described in [`TRAINING.md`](TRAINING.md). The large corpus and
+checkpoints remain development artifacts rather than Git dependencies; the
+selected quantized model is completely preserved by tracked `src/net.cpp`.
+
+Exact retraining of Set 006 requires its original 38 GB archived dataset. That
+archive also remains development material rather than a Git dependency.

@@ -182,12 +182,12 @@ From the repository root, build the utility documented in
 [`EMBEDDING.md`](EMBEDDING.md), then run:
 
 ```powershell
-.\build\tools\embed_file.exe .\training\network.bin .\src\net.cpp
+.\build\tools\embed_file.exe .\training\network_stm_base.bin .\src\net.cpp
 ```
 
 Rebuild Nullstar and verify its UCI initialization and benchmark before match
 testing. The generated `src/net.cpp` is the canonical network included in the
-source tree; the finished executable needs no external `network.bin`.
+source tree; the finished executable needs no external network file.
 
 ## Historical configuration
 

@@ -1,7 +1,7 @@
 # NNUE embedding and development-build preparation
 
-The `tools/embed_file.cpp` utility converts a quantized `network.bin` into the
-`src/net.cpp` byte array linked into Nullstar. The finished chess-engine
+The `tools/embed_file.cpp` utility converts a quantized network binary into
+the `src/net.cpp` byte array linked into Nullstar. The finished chess-engine
 executable does not load an external network file.
 
 For development candidates, use `scripts/prepare_dev_build.ps1` instead of
@@ -17,9 +17,10 @@ MSYS2 MinGW compiler. An explicit alternative can be supplied with
 
 ```powershell
 .\scripts\prepare_dev_build.ps1 `
-  -NetworkFile "C:\path\to\network_stm_base_epoch_20.bin" `
-  -Summary "Epoch 20 STM candidate" `
-  -ValidationLoss 0.415064
+  -NetworkFile "C:\path\to\network_candidate.bin" `
+  -NetworkId "stm-next-candidate" `
+  -Summary "Next STM network candidate" `
+  -ValidationLoss 0.400000
 ```
 
 See [`DEVELOPMENT_BUILDS.md`](DEVELOPMENT_BUILDS.md) for the complete workflow.
@@ -42,10 +43,11 @@ g++ -std=c++20 -O2 -Wall -Wextra -Wpedantic -static `
   -o .\build\tools\embed_file.exe
 ```
 
-For low-level manual use, generate the engine source directly:
+For low-level manual use, generate the engine source directly from the current
+full-training export:
 
 ```powershell
-.\build\tools\embed_file.exe .\training\network.bin .\src\net.cpp
+.\build\tools\embed_file.exe .\training\network_stm_base.bin .\src\net.cpp
 ```
 
 The input must match Nullstar's 768x256 signed-16-bit network layout. Nullstar

@@ -13,5 +13,10 @@
 - [Network](NETWORK.md): active model, hashes, configuration, and reproduction
   boundary;
 - [Provenance](PROVENANCE.md): project lineage, authorship, and licensing;
-- [Nullstar 003 release notes](RELEASE_NOTES.md): changes, strength test, and
-  release checksums.
+- [Nullstar 027 release notes](NULLSTAR_027_RELEASE_NOTES.md): current changes,
+  strength test, and release checksums;
+- [Nullstar 027 GitHub description](GITHUB_RELEASE_027.md): concise,
+  paste-ready GitHub release text;
+- [Nullstar 003 release notes](NULLSTAR_003_RELEASE_NOTES.md) and
+  [GitHub description](GITHUB_RELEASE_003.md): archived initial public-release
+  documentation.
