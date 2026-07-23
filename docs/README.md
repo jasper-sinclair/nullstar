@@ -8,6 +8,8 @@
   network;
 - [Development builds](DEVELOPMENT_BUILDS.md): exact build-to-network mapping,
   hashes, test results, and the automated preparation workflow;
+- [Strength testing](TESTING.md): reference pools, LittleBlitzer scheduling,
+  tournament settings, and result interpretation;
 - [Network](NETWORK.md): active model, hashes, configuration, and reproduction
   boundary;
 - [Provenance](PROVENANCE.md): project lineage, authorship, and licensing;

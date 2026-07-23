@@ -22,5 +22,13 @@
                              "bytes":  2492329,
                              "sha256":  "E323DC98EE0C33F41C324279CB6D4AE58146BF0BC8DD1AE2D6A3ED57B6DF541C"
                          },
-    "test":  null
+    "test":  {
+                 "rating":  3056,
+                 "games":  10000,
+                 "wins":  6987,
+                 "draws":  1271,
+                 "losses":  1742,
+                 "score_percent":  76.22,
+                 "report":  "nullstar_mingw_avx2_pgo 026  3056   10000 (+6987,=1271,-1742),  76.2 %.txt"
+             }
 }
