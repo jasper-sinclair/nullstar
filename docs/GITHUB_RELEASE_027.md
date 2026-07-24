@@ -22,7 +22,7 @@ Second public binary release of Nullstar, an experimental Windows x64 UCI chess 
 
 All six binaries passed UCI, readiness, termination, perft, and deterministic benchmark verification. Cross-compiler search results also matched.
 
-For most modern Windows systems, begin with `nullstar_mingw_avx2_pgo.exe` or `nullstar_msvc_pgo.exe`. The `native` builds are intended for the build computer or a compatible processor.
+For most modern Windows systems, begin with `nullstar_mingw_avx2_pgo.exe` or `nullstar_msvc_pgo.exe`. The distributed MinGW `native` builds were compiled on an Intel Core i9-13900K and are intended for that processor or CPUs supporting an equivalent or greater instruction set.
 
 See the repository documentation for checksums, build instructions, test conditions, network provenance, and training details.
 

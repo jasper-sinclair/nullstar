@@ -83,10 +83,11 @@ do not commit them to the source tree.
 | `nullstar_mingw_avx2_nonpgo.exe` | 1,687,552 | `BC40ED1D7603ADAE174C09A8A93846231F861E0BEC830BF28FBEE0DBD58D8002` |
 | `nullstar_mingw_avx2_pgo.exe` | 1,677,312 | `B7D46D4BD30C560EF12136E78DAD1521F921966DE84A0723890A4186C234E4E9` |
 
-The MinGW `native` binaries are tuned for the build computer and should be
-used only on that computer or a demonstrably compatible processor. The MinGW
-`avx2` binaries target x86-64-v3, which includes AVX2, BMI2, and related
-instructions. The MSVC release configuration also requires AVX2.
+The distributed MinGW `native` binaries were built on an Intel Core i9-13900K
+and are intended for that processor or CPUs supporting an equivalent or
+greater instruction set. For broader compatibility, use the MinGW `avx2`
+binaries, which target x86-64-v3 and require AVX2, BMI2, and related
+instructions. The MSVC release binaries also require AVX2.
 
 All six binaries passed UCI identification, readiness, normal termination,
 the 4,865,609-node depth-5 start-position perft, and the 801,905-node

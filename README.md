@@ -31,6 +31,8 @@ the initial public release.
 - `tools/`: development utilities;
 - `scripts/`: release-build and local training launchers;
 - `docs/`: building, training, network, provenance, and release documentation;
+- `nets/`: published standalone copies of selected quantized NNUE networks and
+  their documentation;
 - `binaries/`: ignored local output directory for release executables.
 
 Start with the [`documentation index`](docs/README.md), or see the current
